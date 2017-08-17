@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 
-from helper import get_hog_features, convert_color, bin_spatial, color_hist
+from helper import Helper
 
 
 class WindowSearch:
@@ -19,11 +19,12 @@ class WindowSearch:
                            spatial_size,
                            hist_bins):
         bounding_boxes = []
-        draw_img = np.copy(img)
+        # uncomment if training dataset is in png
+        # and testing dataset is in jpg
         # img = img.astype(np.float32) / 255
 
         img_tosearch = img[y_start:y_stop, :, :]
-        ctrans_tosearch = convert_color(img_tosearch, conv='RGB2YCrCb')
+        ctrans_tosearch = Helper.convert_color(img_tosearch, conv='RGB2YCrCb')
         if scale != 1:
             imshape = ctrans_tosearch.shape
             ctrans_tosearch = cv.resize(ctrans_tosearch, (np.int(imshape[1] / scale), np.int(imshape[0] / scale)))
@@ -44,9 +45,9 @@ class WindowSearch:
         n_ysteps = (n_yblocks - n_blocks_per_window) // cells_per_step
 
         # Compute individual channel HOG features for the entire image
-        hog1 = get_hog_features(ch1, orient, pix_per_cell, cell_per_block, feature_vec=False)
-        hog2 = get_hog_features(ch2, orient, pix_per_cell, cell_per_block, feature_vec=False)
-        hog3 = get_hog_features(ch3, orient, pix_per_cell, cell_per_block, feature_vec=False)
+        hog1 = Helper.get_hog_features(ch1, orient, pix_per_cell, cell_per_block, feature_vec=False)
+        hog2 = Helper.get_hog_features(ch2, orient, pix_per_cell, cell_per_block, feature_vec=False)
+        hog3 = Helper.get_hog_features(ch3, orient, pix_per_cell, cell_per_block, feature_vec=False)
 
         for xb in range(n_xsteps):
             for yb in range(n_ysteps):
@@ -68,13 +69,15 @@ class WindowSearch:
                 hog_features = np.hstack((hog_feat1, hog_feat2, hog_feat3))
                 # print("hog features shape", hog_features.shape)
 
-                spatial_features = bin_spatial(sub_sample_img, size=spatial_size)
-                hist_features = color_hist(sub_sample_img, nbins=hist_bins)
+                spatial_features = Helper.bin_spatial(sub_sample_img, size=spatial_size)
+                hist_features = Helper.color_hist(sub_sample_img, nbins=hist_bins)
 
                 feature = np.hstack((spatial_features, hist_features, hog_features))
 
                 # Scale features and make a prediction
                 features = scaler.transform(np.array(feature).reshape(1, -1))
+
+                # predict the label for the features
                 predicted_labels = svc.predict(features)
 
                 if predicted_labels == 1:
@@ -87,8 +90,4 @@ class WindowSearch:
                         (x_box_left + win_draw, y_top_draw + win_draw + y_start)
                     ])
 
-                    # cv.rectangle(draw_img,
-                    #              (x_box_left, y_top_draw + y_start),
-                    #              (x_box_left + win_draw, y_top_draw + win_draw + y_start),
-                    #              (0, 0, 255), 6)
         return bounding_boxes

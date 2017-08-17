@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.utils import shuffle
 
-from helper import extract_features
+from helper import Helper
 
 
 class Classifier:
@@ -22,7 +22,7 @@ class Classifier:
                                return_pre_trained=False):
 
         if return_pre_trained:
-            data = pickle.load(open('classifier.p', 'rb'))
+            data = pickle.load(open('trained_classifier.p', 'rb'))
             return data["clf"], data["x_scaler"]
 
         imgs_cars = glob.glob(path)
@@ -35,12 +35,24 @@ class Classifier:
                 cars_files.append(img_file)
 
         # car features
-        car_features = extract_features(cars_files, spatial_size, hist_bins, colorspace, hist_range, orient,
-                                        pix_per_cell, cell_per_block, hog_channel)
+        car_features = Helper.extract_features(cars_files,
+                                               spatial_size,
+                                               hist_bins,
+                                               colorspace,
+                                               orient,
+                                               pix_per_cell,
+                                               cell_per_block,
+                                               hog_channel)
 
         # not car features
-        not_cars_features = extract_features(not_cars_files, spatial_size, hist_bins, colorspace, hist_range, orient,
-                                             pix_per_cell, cell_per_block, hog_channel)
+        not_cars_features = Helper.extract_features(not_cars_files,
+                                                    spatial_size,
+                                                    hist_bins,
+                                                    colorspace,
+                                                    orient,
+                                                    pix_per_cell,
+                                                    cell_per_block,
+                                                    hog_channel)
 
         # append the feature vertically -- i.e. grow in rows with rows constant
         features = np.vstack((car_features, not_cars_features)).astype(np.float64)
@@ -67,5 +79,5 @@ class Classifier:
         # train the classifier
         clf.fit(features, labels)
 
-        pickle.dump({"clf": clf, "x_scaler": scaler}, open('classifier.p', 'wb'))
+        pickle.dump({"clf": clf, "x_scaler": scaler}, open('trained_classifier.p', 'wb'))
         return clf, scaler

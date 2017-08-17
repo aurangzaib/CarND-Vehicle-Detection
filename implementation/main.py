@@ -8,7 +8,7 @@ from scipy.ndimage.measurements import label
 
 sys.path.extend("implementation")
 from classifier import Classifier
-from helper import add_heat, apply_threshold, draw_labeled_bboxes
+from helper import Helper
 from window_search import WindowSearch
 
 orient = 9
@@ -28,10 +28,11 @@ with_color_feature = True
 with_gradient_feature = True
 window_color = (0, 0, 255)
 window_thickness = 3
-training = "/Users/siddiqui/Downloads/advanced-lane-detection-data/data-set/**/**/*.jpeg"
-testing = '/Users/siddiqui/Documents/Projects/self-drive/CarND-Advanced-Lane-Lines/buffer/binary-original-1502624640.jpg'
+training = "../training_datasets/**/**/*.png"
+testing = "../test_images/*.jpg"
 
-clf, x_scaler = Classifier.get_trained_classifier(spatial_size,
+clf, x_scaler = Classifier.get_trained_classifier(training,
+                                                  spatial_size,
                                                   hist_bins,
                                                   cspace,
                                                   hist_range,
@@ -39,7 +40,6 @@ clf, x_scaler = Classifier.get_trained_classifier(spatial_size,
                                                   pix_per_cell,
                                                   cell_per_block,
                                                   hog_channel,
-                                                  training,
                                                   return_pre_trained=True)
 
 imgs = glob.glob(testing)
@@ -57,18 +57,19 @@ for filename in imgs:
                                                      cell_per_block, spatial_size, hist_bins)
 
     # Add heat to each box in box list
-    heat = add_heat(heat, bounding_boxes)
+    heat = Helper.add_heat(heat, bounding_boxes)
 
     # Apply threshold to help remove false positives
-    heat = apply_threshold(heat, 1)
+    heat = Helper.apply_threshold(heat, 1)
 
     # Visualize the heatmap when displaying
     heatmap = np.clip(heat, 0, 255)
 
     # Find final boxes from heatmap using label function
     labels = label(heatmap)
-    draw_img = draw_labeled_bboxes(np.copy(img), labels)
+    draw_img = Helper.draw_labeled_bboxes(np.copy(img), labels)
 
     plt.imshow(draw_img)
     plt.pause(0.000001)
+
 plt.show()
