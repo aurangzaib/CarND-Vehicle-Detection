@@ -1,5 +1,6 @@
 import cv2 as cv
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.ndimage.measurements import label
 from skimage.feature import hog
@@ -134,7 +135,7 @@ class Helper:
             # Assuming each "box" takes the form ((x1, y1), (x2, y2))
             heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
         # Return updated heatmap
-        return heatmap  # Iterate through list of bboxes
+        return heatmap
 
     @staticmethod
     def apply_threshold(heatmap, threshold):
@@ -162,24 +163,25 @@ class Helper:
 
     @staticmethod
     def remove_false_positives(img, bounding_boxes):
-        import matplotlib.pyplot as plt
+        from contrib import Contrib
         heat = np.zeros_like(img[:, :, 0]).astype(np.float)
 
         # Add heat to each box in box list
         heat = Helper.add_heat(heat, bounding_boxes)
-
         # Apply threshold to help remove false positives
-        heat = Helper.apply_threshold(heat, 1)
+        heat_binary = Helper.apply_threshold(heat, 1)
 
         # Visualize the heatmap when displaying
-        heatmap = np.clip(heat, 0, 1)
-        plt.imshow(heatmap, cmap="gray")
+        heatmap_binary = np.clip(heat_binary, 0, 1)
 
         # Find final boxes from heatmap using label function
-        labels = label(heatmap)
+        labels = label(heatmap_binary)
 
         detected_cars = Helper.draw_labeled_bboxes(np.copy(img), labels)
 
+        Contrib.save_heat_map(heat)
+
+        plt.imshow(heat, cmap="gist_heat")
         plt.show()
 
         return detected_cars

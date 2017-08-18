@@ -14,29 +14,33 @@ class Contrib:
     @staticmethod
     def save_detection_multi_windows(img):
         seconds = int(time.time() % 60)
-        if seconds % 10 == 0:
-            mpimg.imsave("../buffer/detection-multi-window/detection-multi-window-{}.png"
-                         .format(seconds),
-                         img)
+        mpimg.imsave("../buffer/detection-multi-windows/detection-multi-window-{}.png"
+                     .format(seconds),
+                     img)
 
     @staticmethod
     def save_detection(img):
         seconds = int(time.time() % 60)
-        if seconds % 10 == 0:
-            mpimg.imsave("../buffer/detection/detection-{}.png"
-                         .format(seconds),
-                         img)
+        mpimg.imsave("../buffer/detections/detection-{}.png"
+                     .format(seconds),
+                     img)
 
     @staticmethod
     def save_hog_features(img, hog_image):
         seconds = int(time.time() % 60)
-        if seconds % 10 == 0:
-            mpimg.imsave("../buffer/hog-features/hog-original-{}.png"
-                         .format(seconds),
-                         img, cmap="gray")
-            mpimg.imsave("../buffer/hog-features/hog-features-{}.png"
-                         .format(seconds),
-                         hog_image, cmap="gray")
+        mpimg.imsave("../buffer/hog-features/hog-original-{}.png"
+                     .format(seconds),
+                     img, cmap="gray")
+        mpimg.imsave("../buffer/hog-features/hog-feature-{}.png"
+                     .format(seconds),
+                     hog_image, cmap="gray")
+
+    @staticmethod
+    def save_heat_map(img):
+        seconds = int(time.time() % 60)
+        mpimg.imsave("../buffer/heat-maps/heat-map-{}.png"
+                     .format(seconds),
+                     img, cmap="gist_heat")
 
     @staticmethod
     def extract_single_img_features(img):
