@@ -2,8 +2,8 @@ import glob
 import sys
 
 import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
-import numpy as np
+
+from contrib import Contrib
 
 sys.path.append("implementation/")
 from classifier import Classifier
@@ -13,7 +13,7 @@ from configuration import Configuration
 
 hyper_params = Configuration().__dict__
 
-classifier = Classifier.get_trained_classifier(use_pre_trained=False)
+classifier = Classifier.get_trained_classifier(use_pre_trained=True)
 
 imgs = glob.glob(hyper_params["testing"])
 for filename in imgs:
@@ -28,8 +28,6 @@ for filename in imgs:
     # 3 channel without alpha
     img = img[:, :, :3]
 
-    heat = np.zeros_like(img[:, :, 0]).astype(np.float)
-
     # image dimensions
     width, height = img.shape[1], img.shape[0]
 
@@ -39,9 +37,10 @@ for filename in imgs:
     # get bounding boxes for cars in the image
     bounding_boxes = WindowSearch.get_bounding_boxes(img, classifier, y_start_top)
 
-    draw_img = Helper.draw_boxes(img, bounding_boxes, color=(0, 0, 0), thick=3)
+    detected_cars_multi_windows = Helper.draw_boxes(img, bounding_boxes, color=(0, 0, 0), thick=3)
+    Contrib.save_detection_multi_windows(detected_cars_multi_windows)
 
-    # Helper.remove_false_positives(img heat, bounding_boxes)
+    detected_cars = Helper.remove_false_positives(img, bounding_boxes)
+    Contrib.save_detection(detected_cars)
 
-    plt.imshow(draw_img)
-    plt.pause(0.000001)
+    # plt.pause(0.000001)

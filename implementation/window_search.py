@@ -46,8 +46,11 @@ class WindowSearch:
         n_ysteps = (n_yblocks - n_blocks_per_window) // cells_per_step
 
         # Compute individual channel HOG features for the entire image
-        hog1 = Helper.get_hog_features(ch1)
+        # Y channel
+        hog1 = Helper.get_hog_features(ch1, save_hog_features=True)
+        # Cr  channel
         hog2 = Helper.get_hog_features(ch2)
+        # Cb channel
         hog3 = Helper.get_hog_features(ch3)
 
         for xb in range(n_xsteps):
