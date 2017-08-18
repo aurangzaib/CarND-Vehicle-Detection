@@ -6,67 +6,41 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.utils import shuffle
 
+from configuration import Configuration
 from helper import Helper
+
+hyper_params = Configuration().__dict__
 
 
 class Classifier:
     @staticmethod
-    def get_trained_classifier(spatial_size,
-                               hist_bins,
-                               colorspace,
-                               hist_range,
-                               orient,
-                               pix_per_cell,
-                               cell_per_block,
-                               hog_channel, path,
-                               return_pre_trained=False):
-
-        if return_pre_trained:
+    def get_trained_classifier(use_pre_trained=False):
+        if use_pre_trained:
             data = pickle.load(open('trained_classifier.p', 'rb'))
+            print("classifier trained.")
             return data["clf"], data["x_scaler"]
 
-        imgs_cars = glob.glob(path)
-        cars_files = []
-        not_cars_files = []
-        for img_file in imgs_cars:
-            if 'image' in img_file or 'extra' in img_file:
-                not_cars_files.append(img_file)
-            else:
-                cars_files.append(img_file)
+        # glob for cars and not cars
+        not_cars = glob.glob(hyper_params["training_not_cars"])
+        cars = glob.glob(hyper_params["training_cars"])
 
-        # car features
-        car_features = Helper.extract_features(cars_files,
-                                               spatial_size,
-                                               hist_bins,
-                                               colorspace,
-                                               orient,
-                                               pix_per_cell,
-                                               cell_per_block,
-                                               hog_channel)
+        # files for cars and not cars
+        not_cars_files = [img_file for img_file in not_cars]
+        cars_files = [img_file for img_file in cars]
 
-        # not car features
-        not_cars_features = Helper.extract_features(not_cars_files,
-                                                    spatial_size,
-                                                    hist_bins,
-                                                    colorspace,
-                                                    orient,
-                                                    pix_per_cell,
-                                                    cell_per_block,
-                                                    hog_channel)
+        # features for cars and not cars
+        car_features = Helper.extract_features(cars_files)
+        not_cars_features = Helper.extract_features(not_cars_files)
 
         # append the feature vertically -- i.e. grow in rows with rows constant
         features = np.vstack((car_features, not_cars_features)).astype(np.float64)
 
         # normalize the features
         scaler = StandardScaler().fit(features)
-
-        # features and labels
-        print("features shape in classifier: {}".format(features.shape))
-
         features = scaler.transform(features)
-        labels = np.hstack((np.ones(len(cars_files)), np.zeros(len(not_cars_files))))
 
-        print("labels shape in classifier: {}".format(labels.shape))
+        # labels
+        labels = np.hstack((np.ones(len(cars_files)), np.zeros(len(not_cars_files))))
 
         # split dataset
         features, labels = shuffle(features, labels)
@@ -78,6 +52,8 @@ class Classifier:
 
         # train the classifier
         clf.fit(features, labels)
+
+        print("classifier trained.")
 
         pickle.dump({"clf": clf, "x_scaler": scaler}, open('trained_classifier.p', 'wb'))
         return clf, scaler

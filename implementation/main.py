@@ -4,72 +4,44 @@ import sys
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.ndimage.measurements import label
 
-sys.path.extend("implementation")
+sys.path.append("implementation/")
 from classifier import Classifier
 from helper import Helper
 from window_search import WindowSearch
+from configuration import Configuration
 
-orient = 9
-pix_per_cell = 8
-cell_per_block = 2
-spatial_size = (32, 32)
-hist_bins = 32
-hog_channel = 'ALL'  # Can be 0, 1, 2, or "ALL"
-scale = 1.5
-spatial = (32, 32)
-hist_range = (0, 256)
-cspace = 'RGB'  # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-xy_window = (96, 96)
-xy_overlap = (0.5, 0.5)
-with_spatial_feature = True
-with_color_feature = True
-with_gradient_feature = True
-window_color = (0, 0, 255)
-window_thickness = 3
-training = "../training_datasets/**/**/*.png"
-testing = "../test_images/*.jpg"
+hyper_params = Configuration().__dict__
 
-clf, x_scaler = Classifier.get_trained_classifier(training,
-                                                  spatial_size,
-                                                  hist_bins,
-                                                  cspace,
-                                                  hist_range,
-                                                  orient,
-                                                  pix_per_cell,
-                                                  cell_per_block,
-                                                  hog_channel,
-                                                  return_pre_trained=True)
+classifier = Classifier.get_trained_classifier(use_pre_trained=False)
 
-imgs = glob.glob(testing)
+imgs = glob.glob(hyper_params["testing"])
 for filename in imgs:
+    # read image
     img = mpimg.imread(filename)
+
+    # testing dataset is in jpg format
+    # while training dataset is in png format
+    # scaling required
+    img = Helper.scale_to_png(img)
+
     # 3 channel without alpha
     img = img[:, :, :3]
+
     heat = np.zeros_like(img[:, :, 0]).astype(np.float)
 
+    # image dimensions
     width, height = img.shape[1], img.shape[0]
+
+    # region of interest (ROI)
     y_start_top = [int(height / 2), height]
 
-    bounding_boxes = WindowSearch.get_bounding_boxes(img, y_start_top[0], y_start_top[1],
-                                                     scale, clf, x_scaler, orient, pix_per_cell,
-                                                     cell_per_block, spatial_size, hist_bins)
+    # get bounding boxes for cars in the image
+    bounding_boxes = WindowSearch.get_bounding_boxes(img, classifier, y_start_top)
 
-    # Add heat to each box in box list
-    heat = Helper.add_heat(heat, bounding_boxes)
+    draw_img = Helper.draw_boxes(img, bounding_boxes, color=(0, 0, 0), thick=3)
 
-    # Apply threshold to help remove false positives
-    heat = Helper.apply_threshold(heat, 1)
-
-    # Visualize the heatmap when displaying
-    heatmap = np.clip(heat, 0, 255)
-
-    # Find final boxes from heatmap using label function
-    labels = label(heatmap)
-    draw_img = Helper.draw_labeled_bboxes(np.copy(img), labels)
+    # Helper.remove_false_positives(img heat, bounding_boxes)
 
     plt.imshow(draw_img)
     plt.pause(0.000001)
-
-plt.show()
