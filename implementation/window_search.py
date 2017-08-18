@@ -1,3 +1,5 @@
+import time
+
 import cv2 as cv
 import numpy as np
 
@@ -47,12 +49,13 @@ class WindowSearch:
 
         # Compute individual channel HOG features for the entire image
         # Y channel
-        hog1 = Helper.get_hog_features(ch1, save_hog_features=True)
+        hog1 = Helper.get_hog_features(ch1, folder="../buffer/hog-features/")
         # Cr  channel
         hog2 = Helper.get_hog_features(ch2)
         # Cb channel
         hog3 = Helper.get_hog_features(ch3)
 
+        t_start = int(time.time() % 60)
         for xb in range(n_xsteps):
             for yb in range(n_ysteps):
                 y_pos = yb * cells_per_step
@@ -81,7 +84,6 @@ class WindowSearch:
 
                 # normalize the features
                 features = scaler.transform(np.array(feature).reshape(1, -1))
-
                 # predict the label for the features: 1 = car, 0 = not car
                 predicted_labels = svc.predict(features)
 
@@ -94,5 +96,7 @@ class WindowSearch:
                         (x_box_left, y_top_draw + y_start),
                         (x_box_left + win_draw, y_top_draw + win_draw + y_start)
                     ])
+        t_end = int(time.time() % 60)
+        print("prediction time: {}".format(t_end - t_start))
 
         return bounding_boxes

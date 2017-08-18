@@ -1,6 +1,7 @@
 class Configuration:
     # hyper-parameters for vehicle detection
     def __init__(self):
+        self.is_training_png = True
         self.orient = 10
         self.pix_per_cell = 8
         self.cell_per_block = 2
@@ -19,10 +20,6 @@ class Configuration:
         self.window_thickness = 3
         self.training_not_cars = "../training_datasets/non-vehicles/*/*.png"
         self.training_cars = "../training_datasets/vehicles/*/*.png"
-        self.testing = "../test_images/*.jpg"
-
-    def get_config_object(self):
-        """
-        return hyper-parameters for the vehicle detection
-        """
-        return self
+        self.testing = ["../buffer/pipeline-original/*.jpg", "../test_images/*.jpg"]
+        self.testing_video = "../test_video.mp4"
+        self.save_debug_samples = False

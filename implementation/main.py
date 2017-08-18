@@ -1,46 +1,64 @@
-import glob
 import sys
 
-import matplotlib.image as mpimg
+import cv2 as cv
+import imageio
 
-from contrib import Contrib
-
-sys.path.append("implementation/")
 from classifier import Classifier
-from helper import Helper
-from window_search import WindowSearch
 from configuration import Configuration
-
-hyper_params = Configuration().__dict__
+from helper import Helper
+from lane_detection import LaneDetection
+from pre_processing import PreProcessing
+from visualization import Visualization
+from window_search import WindowSearch
 
 classifier = Classifier.get_trained_classifier(use_pre_trained=True)
+hyper_params = Configuration().__dict__
+sys.path.append("implementation/")
 
-imgs = glob.glob(hyper_params["testing"])
-for filename in imgs:
-    # read image
-    img = mpimg.imread(filename)
 
-    # testing dataset is in jpg format
-    # while training dataset is in png format
-    # scaling required
-    img = Helper.scale_to_png(img)
+def __main__():
+    video_cap = imageio.get_reader(hyper_params["testing_video"])
 
-    # 3 channel without alpha
-    img = img[:, :, :3]
+    # polynomial lane fit
+    lanes_fit = []
 
-    # image dimensions
-    width, height = img.shape[1], img.shape[0]
+    # load calibration parameters:
+    camera_matrix, dist_coef = PreProcessing.load_calibration_params()
+    for img in video_cap:
+        lanes_fit, img = LaneDetection.pipeline(img, lanes_fit, camera_matrix, dist_coef)
 
-    # region of interest (ROI)
-    y_start_top = [int(height / 2), height]
+        # testing dataset is in jpg format
+        # while training dataset is in png format
+        # scaling required
+        if hyper_params["is_training_png"]:
+            img = Helper.scale_to_png(img)
 
-    # get bounding boxes for cars in the image
-    bounding_boxes = WindowSearch.get_bounding_boxes(img, classifier, y_start_top)
+        # 3 channel without alpha
+        img = img[:, :, :3]
 
-    detected_cars_multi_windows = Helper.draw_boxes(img, bounding_boxes, color=(0, 0, 0), thick=3)
-    Contrib.save_detection_multi_windows(detected_cars_multi_windows)
+        # image dimensions
+        width, height = img.shape[1], img.shape[0]
 
-    detected_cars = Helper.remove_false_positives(img, bounding_boxes)
-    Contrib.save_detection(detected_cars)
+        # region of interest (ROI)
+        y_start_top = [int(height / 2), height]
 
-    # plt.pause(0.000001)
+        # get bounding boxes for cars in the image
+        bounding_boxes = WindowSearch.get_bounding_boxes(img, classifier, y_start_top)
+
+        # remove false positives and duplicates from detection
+        detected_cars = Helper.remove_false_positives(img, bounding_boxes)
+
+        if hyper_params["save_debug_samples"] is True:
+            # get detected cars
+            detected_cars_multi_windows = Helper.draw_boxes(img, bounding_boxes, color=(0, 0, 0), thick=3)
+            Visualization.save_detection_multi_windows(img, detected_cars_multi_windows)
+            Visualization.save_detection(img, detected_cars)
+
+        detected_cars = cv.resize(detected_cars, None, fx=0.5, fy=0.5, interpolation=cv.INTER_LINEAR)
+        detected_cars = cv.cvtColor(detected_cars, cv.COLOR_BGR2RGB)
+
+        cv.imshow("Detected Cars", detected_cars)
+        cv.waitKey(1)
+
+
+__main__()

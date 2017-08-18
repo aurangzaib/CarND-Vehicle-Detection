@@ -1,6 +1,7 @@
+import time
+
 import cv2 as cv
 import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.ndimage.measurements import label
 from skimage.feature import hog
@@ -51,18 +52,20 @@ class Helper:
         return img_pts_drawn
 
     @staticmethod
-    def get_hog_features(img, feature_vec=False, save_hog_features=False):
-        from contrib import Contrib
+    def get_hog_features(img, feature_vec=False, folder="", filename=None, save=False):
+        from visualization import Visualization
         # Call with two outputs if vis==True
         features, hog_image = hog(img,
                                   orientations=hyper_params["orient"],
-                                  pixels_per_cell=(hyper_params["pix_per_cell"], hyper_params["pix_per_cell"]),
-                                  cells_per_block=(hyper_params["cell_per_block"], hyper_params["cell_per_block"]),
+                                  pixels_per_cell=(hyper_params["pix_per_cell"],
+                                                   hyper_params["pix_per_cell"]),
+                                  cells_per_block=(hyper_params["cell_per_block"],
+                                                   hyper_params["cell_per_block"]),
                                   transform_sqrt=True,
                                   visualise=True,
                                   feature_vector=feature_vec)
-        if save_hog_features is True:
-            Contrib.save_hog_features(img, hog_image)
+        if folder is not "" and save is True:
+            Visualization.save_hog_features(img, hog_image, folder, filename)
         return features
 
     @staticmethod
@@ -92,14 +95,20 @@ class Helper:
             if hyper_params["hog_channel"] == 'ALL':
                 hog_features = []
                 # get features for all 3 channels
+                seconds = int(time.time() % 60)
                 for channel in range(feature_image.shape[2]):
-                    hog_features.append(Helper.get_hog_features(feature_image[:, :, channel],
-                                                                feature_vec=True))
+                    single_channel_img = feature_image[:, :, channel]
+                    filename = "{}-channel-{}".format(seconds, str(channel))
+                    hog_features.append(Helper.get_hog_features(single_channel_img,
+                                                                folder="../buffer/hog-train-features/",
+                                                                filename=filename,
+                                                                feature_vec=True,
+                                                                save=hyper_params["save_debug_samples"]))
                 hog_features = np.ravel(hog_features)
             else:
                 # get features for specific channel
-                hog_features = Helper.get_hog_features(feature_image[:, :, hyper_params["hog_channel"]],
-                                                       feature_vec=True)
+                single_channel_img = feature_image[:, :, hyper_params["hog_channel"]]
+                hog_features = Helper.get_hog_features(single_channel_img, feature_vec=True)
 
             # Apply bin_spatial() to get spatial color features
             bin_features = Helper.bin_spatial(feature_image, hyper_params["spatial_size"])
@@ -163,7 +172,7 @@ class Helper:
 
     @staticmethod
     def remove_false_positives(img, bounding_boxes):
-        from contrib import Contrib
+        from visualization import Visualization
         heat = np.zeros_like(img[:, :, 0]).astype(np.float)
 
         # Add heat to each box in box list
@@ -177,11 +186,10 @@ class Helper:
         # Find final boxes from heatmap using label function
         labels = label(heatmap_binary)
 
+        # show box where label is 1
         detected_cars = Helper.draw_labeled_bboxes(np.copy(img), labels)
 
-        Contrib.save_heat_map(heat)
-
-        plt.imshow(heat, cmap="gist_heat")
-        plt.show()
+        # save heatmaps
+        Visualization.save_heat_map(heat)
 
         return detected_cars
