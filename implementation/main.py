@@ -2,7 +2,6 @@ import sys
 
 import cv2 as cv
 import imageio
-
 from classifier import Classifier
 from configuration import Configuration
 from helper import Helper
@@ -26,6 +25,7 @@ def __main__():
     camera_matrix, dist_coef = PreProcessing.load_calibration_params()
     for img in video_cap:
         lanes_fit, img = LaneDetection.pipeline(img, lanes_fit, camera_matrix, dist_coef)
+        img = cv.resize(img, None, fx=0.6, fy=0.6, interpolation=cv.INTER_LINEAR)
 
         # testing dataset is in jpg format
         # while training dataset is in png format
@@ -54,7 +54,6 @@ def __main__():
             Visualization.save_detection_multi_windows(img, detected_cars_multi_windows)
             Visualization.save_detection(img, detected_cars)
 
-        detected_cars = cv.resize(detected_cars, None, fx=0.5, fy=0.5, interpolation=cv.INTER_LINEAR)
         detected_cars = cv.cvtColor(detected_cars, cv.COLOR_BGR2RGB)
 
         cv.imshow("Detected Cars", detected_cars)

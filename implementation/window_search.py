@@ -55,7 +55,7 @@ class WindowSearch:
         # Cb channel
         hog3 = Helper.get_hog_features(ch3)
 
-        t_start = int(time.time() % 60)
+        t_start = int(time.time())
         for xb in range(n_xsteps):
             for yb in range(n_ysteps):
                 y_pos = yb * cells_per_step
@@ -96,7 +96,7 @@ class WindowSearch:
                         (x_box_left, y_top_draw + y_start),
                         (x_box_left + win_draw, y_top_draw + win_draw + y_start)
                     ])
-        t_end = int(time.time() % 60)
+        t_end = int(time.time())
         print("prediction time: {}".format(t_end - t_start))
 
         return bounding_boxes
