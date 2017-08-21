@@ -12,16 +12,21 @@ config = Configuration().__dict__
 
 class WindowSearch:
     @staticmethod
-    # Define a single function that can extract features using hog sub-sampling and
-    # make predictions
-    def get_bounding_boxes(img, classifier, y_start_top):
-        # region of interest (ROI)
+    def get_box(x_left, y_start, y_top, window):
+        x_box_left = np.int(x_left * config["scale"])
+        y_top_draw = np.int(y_top * config["scale"])
+        win_draw = np.int(window * config["scale"])
+
+        box = [
+            (x_box_left, y_top_draw + y_start),
+            (x_box_left + win_draw, y_top_draw + win_draw + y_start)
+        ]
+        return box
+
+    @staticmethod
+    def get_frame_hog(img, y_start_top):
+
         y_start, y_stop = y_start_top
-
-        # classifier and scaler
-        svc, scaler = classifier
-
-        bounding_boxes = []
 
         img_tosearch = img[y_start:y_stop, :, :]
         ctrans_tosearch = Helper.convert_color(img_tosearch, conv='RGB2YCrCb')
@@ -36,10 +41,8 @@ class WindowSearch:
         ch3 = ctrans_tosearch[:, :, 2]
 
         # Define blocks and steps as above
-        n_xblocks = (ch1.shape[1] // config["pix_per_cell"]) \
-                    - config["cell_per_block"] + 1
-        n_yblocks = (ch1.shape[0] // config["pix_per_cell"]) \
-                    - config["cell_per_block"] + 1
+        n_xblocks = (ch1.shape[1] // config["pix_per_cell"]) - config["cell_per_block"] + 1
+        n_yblocks = (ch1.shape[0] // config["pix_per_cell"]) - config["cell_per_block"] + 1
 
         # 64 was the original sampling rate, with 8 cells and 8 pix per cell
         window = 64
@@ -55,6 +58,22 @@ class WindowSearch:
         hog2 = FeatureExtraction.get_hog_features(ch2)
         # Cb channel
         hog3 = FeatureExtraction.get_hog_features(ch3)
+        return (hog1, hog2, hog3), (n_xsteps, n_ysteps), cells_per_step, (window, n_blocks_per_window, ctrans_tosearch)
+
+    @staticmethod
+    # Define a single function that can extract features using hog sub-sampling and
+    # make predictions
+    def get_bounding_boxes(img, classifier, y_start_top):
+
+        # get hog features for full image
+        hog, n_steps, cells_per_step, window = WindowSearch.get_frame_hog(img, y_start_top)
+
+        svc, scaler = classifier
+        hog1, hog2, hog3 = hog
+        n_xsteps, n_ysteps = n_steps
+        window, n_blocks_per_window, ctrans_tosearch = window
+        y_start, y_stop = y_start_top
+        bounding_boxes = []
 
         t_start = int(time.time())
         for xb in range(n_xsteps):
@@ -71,8 +90,7 @@ class WindowSearch:
                 y_top = y_pos * config["pix_per_cell"]
 
                 # Extract the image patch
-                sub_sample_img = cv.resize(ctrans_tosearch[y_top:y_top + window, x_left:x_left + window],
-                                           (64, 64))
+                sub_sample_img = cv.resize(ctrans_tosearch[y_top:y_top + window, x_left:x_left + window], (64, 64))
 
                 # Get color and gradient features
                 hog_features = np.hstack((hog_feat1, hog_feat2, hog_feat3))
@@ -88,15 +106,9 @@ class WindowSearch:
                 # predict the label for the features: 1 = car, 0 = not car
                 predicted_labels = svc.predict(features)
 
+                # get the bounding box for detected cars
                 if predicted_labels == 1:
-                    x_box_left = np.int(x_left * config["scale"])
-                    y_top_draw = np.int(y_top * config["scale"])
-                    win_draw = np.int(window * config["scale"])
-
-                    bounding_boxes.append([
-                        (x_box_left, y_top_draw + y_start),
-                        (x_box_left + win_draw, y_top_draw + win_draw + y_start)
-                    ])
+                    bounding_boxes.append(WindowSearch.get_box(x_left, y_start, y_top, window))
         t_end = int(time.time())
         print("prediction time: {}".format(t_end - t_start))
 

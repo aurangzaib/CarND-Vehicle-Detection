@@ -9,7 +9,7 @@ The steps of the project are the following:
 
 - Perform a Histogram of Oriented Gradients (HOG), Color Transform and Spatial Bining to extract features on a labeled training set of images.
 
-- Randomize and normalize the features and train a classifier Linear SVM classifier.
+- Randomize and normalize the features and train a classifier SVM classifier.
 
 - Implement a sliding-window technique with HOG sub-sampling and use the trained classifier to search for vehicles in images by predicitng the labels for each feature.
 
@@ -27,7 +27,7 @@ The steps of the project are the following:
 [image7]: ./examples/output_bboxes.png
 [video1]: ./project_video.mp4
 
-### Feature Extraction
+### 1-	Feature Extraction
 
 | Source Code Reference    |  |
 |:-----------|:-------------|
@@ -63,7 +63,7 @@ Here is an example of HOG features of training data samples:
 ![alt text](./documentation/hog-features-4.png)
 
 
-### Training SVM Classifier:
+### 2-	Training SVM Classifier:
 
 | Source Code Reference    |  |
 |:-----------|:-------------|
@@ -83,8 +83,27 @@ Parameter for SVM classifier found using `GridSearchCV` are as follows:
 | Kernel  | rbf  |
 | C  | 10      |
 
-###Sliding Window Search
+### 3-	Sliding Window Search with HOG subsampling:
 
+| Source Code Reference    |  |
+|:-----------|:-------------|
+| File  | `implementation/window_search.py`  |
+| Method  | `WindowSearch.get_frame_hog`      |
+| Method  | `WindowSearch.get_box`      |
+| Method  | `WindowSearch.get_bounding_boxes`      |
+
+-	Get HOG features for each full image:
+	-	Get Region of Interest (ROI) which is lower half of the image.
+    -	Find number of search steps using window size and number of windows.
+    -	Get Y, Cr and Cb channels HOG features individually.
+    
+-	Loop over the windows in x and y direction:
+    -	Get subsample of image of each window.
+	-	Get subsample of HOG featuers of each window.
+    -	Get Spatial and Color Histogram fratures.
+    -	Use HOG, Spatial and Color features to predict the labels using pretrained SVM classifier.
+    -	Get the coordiantes of bounding boxes whenever predicts label as a car.
+    
 ####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
 I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
