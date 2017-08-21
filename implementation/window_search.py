@@ -4,6 +4,7 @@ import cv2 as cv
 import numpy as np
 
 from configuration import Configuration
+from feature_extraction import FeatureExtraction
 from helper import Helper
 
 config = Configuration().__dict__
@@ -49,11 +50,11 @@ class WindowSearch:
 
         # Compute individual channel HOG features for the entire image
         # Y channel
-        hog1 = Helper.get_hog_features(ch1, folder="../buffer/hog-features/")
+        hog1 = FeatureExtraction.get_hog_features(ch1, folder="../buffer/hog-features/")
         # Cr  channel
-        hog2 = Helper.get_hog_features(ch2)
+        hog2 = FeatureExtraction.get_hog_features(ch2)
         # Cb channel
-        hog3 = Helper.get_hog_features(ch3)
+        hog3 = FeatureExtraction.get_hog_features(ch3)
 
         t_start = int(time.time())
         for xb in range(n_xsteps):
@@ -75,8 +76,8 @@ class WindowSearch:
 
                 # Get color and gradient features
                 hog_features = np.hstack((hog_feat1, hog_feat2, hog_feat3))
-                spatial_features = Helper.bin_spatial(sub_sample_img, size=config["spatial_size"])
-                hist_features = Helper.color_hist(sub_sample_img, nbins=config["hist_bins"])
+                spatial_features = FeatureExtraction.bin_spatial(sub_sample_img, size=config["spatial_size"])
+                hist_features = FeatureExtraction.color_hist(sub_sample_img, nbins=config["hist_bins"])
 
                 # append merge features
                 feature = np.hstack((spatial_features, hist_features, hog_features))

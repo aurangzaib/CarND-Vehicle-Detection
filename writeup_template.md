@@ -1,18 +1,21 @@
-##Writeup Template
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
+# Vehicle Detection Project
 
----
+| Note    | |
+|:-----------|:-------------|
+| **Source Code**  | For complete implementation of the project:  https://github.com/aurangzaib/CarND-Vehicle-Detection  |
+| **How To Run**  | `cd implementation && python main.py`      |
 
-**Vehicle Detection Project**
+The steps of the project are the following:
 
-The goals / steps of this project are the following:
+- Perform a Histogram of Oriented Gradients (HOG), Color Transform and Spatial Bining to extract features on a labeled training set of images.
 
-* Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
-* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector. 
-* Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.
-* Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
-* Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
-* Estimate a bounding box for vehicles detected.
+- Randomize and normalize the features and train a classifier Linear SVM classifier.
+
+- Implement a sliding-window technique with HOG sub-sampling and use the trained classifier to search for vehicles in images by predicitng the labels for each feature.
+
+- Create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
+
+- Estimate a bounding box for vehicles detected.
 
 [//]: # (Image References)
 [image1]: ./examples/car_not_car.png
@@ -24,40 +27,61 @@ The goals / steps of this project are the following:
 [image7]: ./examples/output_bboxes.png
 [video1]: ./project_video.mp4
 
-## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
-###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+### Feature Extraction
 
----
-###Writeup / README
+| Source Code Reference    |  |
+|:-----------|:-------------|
+| File  | `implementation/feature_extraction.py`  |
+| Method  | `FeatureExtraction.bin_spatial`      |
+| Method  | `FeatureExtraction.color_hist`      |
+| Method  | `FeatureExtraction.get_hog_features`      |
 
-####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
+-	Reading in all the `vehicle` and `non-vehicle` images.
+-	For Spatial Bining, we resize the image to 32x32 and use numpy `ravel` for each color channel to get features vector.
+-	For Color Histogram, we use numpy `hiostogram` for each channel and concatenate them.
+-	For HOG features, skimage `hog` is used with predefined following parameters.
 
-You're reading it!
-
-###Histogram of Oriented Gradients (HOG)
-
-####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
-
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
-
-I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
-
-![alt text][image1]
-
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
-
-Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
+| HOG parameters    |Value  |
+|:-----------|:-------------|
+| Orient  | 10  |
+| Pixel per cell  | 8      |
+| Cell per block  | 2      |
+| Spatial size  | 32x32      |
+| Color space  | YCrCb      |
 
 
-![alt text][image2]
+Here is an example of HOG features of training data samples:
 
-####2. Explain how you settled on your final choice of HOG parameters.
+1: `Original Image`. 2:  `Channel 1 HOG features` 3: `Channel 2` 4: `Channel 3`
 
-I tried various combinations of parameters and...
+![alt text](./documentation/hog-features-1.png)
 
-####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
+![alt text](./documentation/hog-features-2.png)
 
-I trained a linear SVM using...
+![alt text](./documentation/hog-features-3.png)
+
+![alt text](./documentation/hog-features-4.png)
+
+
+### Training SVM Classifier:
+
+| Source Code Reference    |  |
+|:-----------|:-------------|
+| File  | `implementation/classifier.py`  |
+| Method  | `Classifier.normalize_features`      |
+| Method  | `Classifier.get_trained_classifier`      |
+
+-	Randomize dataset using numpy `shuffle`.
+-	Normalize features using sklearn `StandardScaler`.
+Using Support Vector Machine (SVM) classifier to train on the features and labels.
+-	Save the trained classifier as `pickle` file.
+
+Parameter for SVM classifier found using `GridSearchCV` are as follows:
+
+| SVM parameters    |Value  |
+|:-----------|:-------------|
+| Kernel  | rbf  |
+| C  | 10      |
 
 ###Sliding Window Search
 

@@ -5,6 +5,7 @@ import matplotlib.image as mpimg
 import numpy as np
 
 from configuration import Configuration
+from feature_extraction import FeatureExtraction
 from helper import Helper
 
 config = Configuration().__dict__
@@ -23,6 +24,9 @@ class Visualization:
 
     @staticmethod
     def save_hog_features(img, hog_image, folder, filename):
+        """
+        to be used in FeatureExtraction.get_hog_features
+        """
         seconds = int(time.time() % 60)
         filename = filename if filename else seconds
         if seconds % 10 == 0:
@@ -58,17 +62,18 @@ class Visualization:
             channels = feature_image.shape[2]
             # get features for all 3 channels
             for channel in range(channels):
-                hog_features.append(Helper.get_hog_features(feature_image[:, :, channel], feature_vec=True))
+                hog_features.append(FeatureExtraction.get_hog_features(feature_image[:, :, channel], feature_vec=True))
                 hog_features = np.ravel(hog_features)
         else:
             # get features for specific channel
-            hog_features = Helper.get_hog_features(feature_image[:, :, config["hog_channel"]], feature_vec=True)
+            hog_features = FeatureExtraction.get_hog_features(feature_image[:, :, config["hog_channel"]],
+                                                              feature_vec=True)
 
         # Apply bin_spatial() to get spatial color features
-        bin_features = Helper.bin_spatial(feature_image, config["spatial_size"])
+        bin_features = FeatureExtraction.bin_spatial(feature_image, config["spatial_size"])
 
         # Apply color_hist() to get color histogram features
-        color_hist_features = Helper.color_hist(feature_image, config["hist_bins"])
+        color_hist_features = FeatureExtraction.color_hist(feature_image, config["hist_bins"])
 
         # concatenate all 3 types of features
         feature = np.concatenate((bin_features, color_hist_features, hog_features), axis=0)

@@ -8,6 +8,7 @@ from configuration import Configuration
 from helper import Helper
 from lane_detection import LaneDetection
 from pre_processing import PreProcessing
+from visualization import Visualization
 from window_search import WindowSearch
 
 config = Configuration().__dict__
@@ -55,10 +56,7 @@ def __main__():
         # get detected cars
         # detected_cars_multi_windows = Helper.draw_boxes(img, bounding_boxes, color=(0, 0, 0), thick=3)
         # Visualization.save_detection_multi_windows(img, detected_cars_multi_windows)
-        # Visualization.save_detection(img, detected_cars)
-
-        cv.imshow("result", detected_cars)
-        cv.waitKey(1)
+        Visualization.save_detection(img, detected_cars)
 
 
 __main__()

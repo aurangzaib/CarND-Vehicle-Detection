@@ -7,12 +7,18 @@ from sklearn.svm import SVC
 from sklearn.utils import shuffle
 
 from configuration import Configuration
-from helper import Helper
+from feature_extraction import FeatureExtraction
 
 config = Configuration().__dict__
 
 
 class Classifier:
+    @staticmethod
+    def normalize_features(features):
+        scaler = StandardScaler().fit(features)
+        features = scaler.transform(features)
+        return features, scaler
+
     @staticmethod
     def get_trained_classifier(use_pre_trained=False):
         if use_pre_trained:
@@ -29,15 +35,14 @@ class Classifier:
         cars_files = [img_file for img_file in cars]
 
         # features for cars and not cars
-        car_features = Helper.extract_features(cars_files)
-        not_cars_features = Helper.extract_features(not_cars_files)
+        car_features = FeatureExtraction.extract_features(cars_files)
+        not_cars_features = FeatureExtraction.extract_features(not_cars_files)
 
         # append the feature vertically -- i.e. grow in rows with rows constant
         features = np.vstack((car_features, not_cars_features)).astype(np.float64)
 
         # normalize the features
-        scaler = StandardScaler().fit(features)
-        features = scaler.transform(features)
+        features, scaler = Classifier.normalize_features(features)
 
         # labels
         labels = np.hstack((np.ones(len(cars_files)), np.zeros(len(not_cars_files))))
