@@ -9,20 +9,20 @@ from sklearn.utils import shuffle
 from configuration import Configuration
 from helper import Helper
 
-hyper_params = Configuration().__dict__
+config = Configuration().__dict__
 
 
 class Classifier:
     @staticmethod
     def get_trained_classifier(use_pre_trained=False):
         if use_pre_trained:
-            data = pickle.load(open('trained_classifier.p', 'rb'))
+            data = pickle.load(open(config["classifier"], 'rb'))
             print("classifier trained.")
             return data["clf"], data["x_scaler"]
 
         # glob for cars and not cars
-        not_cars = glob.glob(hyper_params["training_not_cars"])
-        cars = glob.glob(hyper_params["training_cars"])
+        not_cars = glob.glob(config["training_not_cars"])
+        cars = glob.glob(config["training_cars"])
 
         # files for cars and not cars
         not_cars_files = [img_file for img_file in not_cars]
@@ -42,7 +42,7 @@ class Classifier:
         # labels
         labels = np.hstack((np.ones(len(cars_files)), np.zeros(len(not_cars_files))))
 
-        # split dataset
+        # shuffle dataset
         features, labels = shuffle(features, labels)
 
         # initialize SVM with optimized params using GridSearchCV
@@ -55,5 +55,5 @@ class Classifier:
 
         print("classifier trained.")
 
-        pickle.dump({"clf": clf, "x_scaler": scaler}, open('trained_classifier.p', 'wb'))
+        pickle.dump({"clf": clf, "x_scaler": scaler}, open(config["classifier"], 'wb'))
         return clf, scaler

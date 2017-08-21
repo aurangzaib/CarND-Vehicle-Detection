@@ -42,13 +42,13 @@ class LaneDetection:
         center_distance, lane_width = Metrics.get_distance_from_center(lane_lines, lanes_fit)
 
         # unwrap the image
-        resultant = PerspectiveTransform.get_unwrapped_image(undistorted_image, warped_image, src, dst, lanes_fit)
+        resultant_img = PerspectiveTransform.get_unwrapped_image(undistorted_image, warped_image, src, dst, lanes_fit)
 
         # visualize the pipeline
         if is_debug_enabled is True:
-            resultant = Visualization.visualize_pipeline(resultant, img_dst,
-                                                         binary_image, lane_lines,
-                                                         radius, center_distance,
-                                                         lane_width)
+            resultant_img = Visualization.visualize_pipeline(resultant_img, img_dst,
+                                                             binary_image, lane_lines,
+                                                             radius, center_distance,
+                                                             lane_width)
 
-        return lanes_fit, resultant
+        return lanes_fit, resultant_img

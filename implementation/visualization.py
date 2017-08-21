@@ -7,20 +7,18 @@ import numpy as np
 from configuration import Configuration
 from helper import Helper
 
-hyper_params = Configuration().__dict__
+config = Configuration().__dict__
 
 
 class Visualization:
     @staticmethod
     def save_detection_multi_windows(img, detected):
         seconds = int(time.time() % 60)
-        mpimg.imsave("../buffer/detection-multi-windows/{}-multi-window-original.png".format(seconds), img)
         mpimg.imsave("../buffer/detection-multi-windows/{}-multi-window-detection.png".format(seconds), detected)
 
     @staticmethod
     def save_detection(img, detected):
         seconds = int(time.time() % 60)
-        mpimg.imsave("../buffer/detections/{}-single-window-original.png".format(seconds), img)
         mpimg.imsave("../buffer/detections/{}-single-window-detection.png".format(seconds), detected)
 
     @staticmethod
@@ -38,10 +36,10 @@ class Visualization:
     @staticmethod
     def save_heat_map(img):
         seconds = int(time.time() % 60)
-        if seconds % 10 == 0:
-            mpimg.imsave("../buffer/heat-maps/{}-heat-map.png"
-                         .format(seconds),
-                         img, cmap="gist_heat")
+        # if seconds % 10 == 0:
+        mpimg.imsave("../buffer/heat-maps/{}-heat-map.png"
+                     .format(seconds),
+                     img, cmap="gist_heat")
 
     @staticmethod
     def extract_single_img_features(img):
@@ -52,10 +50,10 @@ class Visualization:
         features = []
 
         # apply color conversion if other than 'RGB'
-        feature_image = Helper.change_cspace(img, hyper_params["cspace"])
+        feature_image = Helper.change_cspace(img)
 
         # get hog features for either specific channel or for all channels
-        if hyper_params["hog_channel"] == 'ALL':
+        if config["hog_channel"] == 'ALL':
             hog_features = []
             channels = feature_image.shape[2]
             # get features for all 3 channels
@@ -64,13 +62,13 @@ class Visualization:
                 hog_features = np.ravel(hog_features)
         else:
             # get features for specific channel
-            hog_features = Helper.get_hog_features(feature_image[:, :, hyper_params["hog_channel"]], feature_vec=True)
+            hog_features = Helper.get_hog_features(feature_image[:, :, config["hog_channel"]], feature_vec=True)
 
         # Apply bin_spatial() to get spatial color features
-        bin_features = Helper.bin_spatial(feature_image, hyper_params["spatial_size"])
+        bin_features = Helper.bin_spatial(feature_image, config["spatial_size"])
 
         # Apply color_hist() to get color histogram features
-        color_hist_features = Helper.color_hist(feature_image, hyper_params["hist_bins"])
+        color_hist_features = Helper.color_hist(feature_image, config["hist_bins"])
 
         # concatenate all 3 types of features
         feature = np.concatenate((bin_features, color_hist_features, hog_features), axis=0)
@@ -219,13 +217,13 @@ class Visualization:
         return lanes_img
 
     @staticmethod
-    def visualize_pipeline(resultant, img_dst,
+    def visualize_pipeline(resultant_img, img_dst,
                            binary_image, lane_lines,
                            radius, center_distance,
                            lane_width):
         """
         visualize the important steps of the pipeline
-        :param resultant: resultant image of the pipeline
+        :param resultant_img: resultant image of the pipeline
         :param img_dst: wrapped binary image
         :param binary_image: binary image
         :param lane_lines: wrapped binary image with lane lines
@@ -244,11 +242,11 @@ class Visualization:
         left_or_right = "left" if center_distance > 0 else "right"
         distance_txt = "Vehicle is {}m {} of center ".format(str(round(abs(center_distance), 2)), left_or_right)
 
-        cv.putText(resultant, radius_txt, (10, 30), font, 0.6, (255, 255, 255), 1, cv.LINE_AA)
-        cv.putText(resultant, distance_txt, (10, 60), font, 0.6, (255, 255, 255), 1, cv.LINE_AA)
+        cv.putText(resultant_img, radius_txt, (10, 30), font, 0.6, (255, 255, 255), 1, cv.LINE_AA)
+        cv.putText(resultant_img, distance_txt, (10, 60), font, 0.6, (255, 255, 255), 1, cv.LINE_AA)
 
         # resize the image for better visualization
         img_dst = cv.resize(img_dst, None, fx=0.4, fy=0.3, interpolation=cv.INTER_LINEAR)
         lane_lines = cv.resize(lane_lines, None, fx=0.4, fy=0.3, interpolation=cv.INTER_LINEAR)
 
-        return resultant
+        return resultant_img

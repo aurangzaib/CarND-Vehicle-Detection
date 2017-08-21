@@ -1,16 +1,16 @@
-import glob
 import pickle
 
 import cv2 as cv
-import matplotlib.image as mpimg
 import numpy as np
 
-from visualization import Visualization
+from configuration import Configuration
+
+config = Configuration().__dict__
 
 
 class PreProcessing:
     @staticmethod
-    def save_calibration_params(camera_matrix, dist_coef, filename="calibration_parameters.p"):
+    def save_calibration_params(camera_matrix, dist_coef, filename=config["calibration_parameters"]):
         """
         save the matrix and coef in a pickle file
         :param camera_matrix: camera matrix found using cv.calibrateCamera
@@ -26,7 +26,7 @@ class PreProcessing:
         print("parameters saved to disk")
 
     @staticmethod
-    def load_calibration_params(filename="calibration_parameters.p"):
+    def load_calibration_params(filename=config["calibration_parameters"]):
         """
         load pickle files for train, validation and test
         :param filename: to read the pickle file
@@ -35,55 +35,6 @@ class PreProcessing:
         with open(filename, mode='rb') as f:
             parameters = pickle.load(f)
         return parameters['camera_matrix'], parameters['dist_coef']
-
-    @staticmethod
-    def get_calibration_params(nx, ny, channels=3):
-        """
-        find the corners of the image using cv.findChessboardCorners
-        find camera matrix and distortion coef. using cv.calibrateCamera with corners and
-        pattern size as arguments. undistort the image using cv.undistort with camera matrix
-        and distortion coef. as arguments
-        :param nx: number of corners in x direction
-        :param ny: number of corners in y direction
-        :param channels: channels in image, 3 here
-        :return: camera matrix and distortion coef
-        """
-        imgs = glob.glob("camera_cal/*.jpg")
-        # img_pts --> 2D coordinates in image
-        # obj_pts --> 3D coordinates in real world
-        img_pts, obj_pts, = [], []
-        # to create a matrix of 4x5 --> np.mgrid[0:4, 0:5]
-        obj_pt = np.zeros(shape=(nx * ny, channels), dtype=np.float32)
-        obj_pt[:, :2] = np.mgrid[0:nx, 0:ny].T.reshape(-1, 2)
-        # loop over all images and append the image and object points
-        for file_name in imgs:
-            # read the image
-            img = mpimg.imread(file_name)
-            # grayscale
-            gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
-            # find the corners
-            found, corners = cv.findChessboardCorners(image=gray, patternSize=(nx, ny))
-            if found is True:
-                obj_pts.append(obj_pt)
-                img_pts.append(corners)
-                # draw the found corner points in the image
-                draw_pts = np.copy(img)
-                cv.drawChessboardCorners(image=draw_pts,
-                                         patternSize=(nx, ny),
-                                         corners=corners,
-                                         patternWasFound=found)
-
-        # use an image to find camera matrix and distortion coef
-        test_img = mpimg.imread("camera_cal/calibration4.jpg")
-        # find camera matrix and distortion coef
-        ret, camera_matrix, dist_coef, rot_vector, trans_vector = cv.calibrateCamera(objectPoints=obj_pts,
-                                                                                     imagePoints=img_pts,
-                                                                                     imageSize=test_img.shape[0:2],
-                                                                                     cameraMatrix=None,
-                                                                                     distCoeffs=None)
-        # store calibration params as pickle to avoid recalibration
-        PreProcessing.save_calibration_params(camera_matrix, dist_coef)
-        return camera_matrix, dist_coef
 
     @staticmethod
     def get_undistorted_image(nx, ny, img, camera_matrix, dist_coef, load_params=True):
@@ -148,10 +99,5 @@ class PreProcessing:
         # resultant of r, s and sx
         binary_image = np.zeros_like(sx_binary)
         binary_image[((sx_binary == 1) | (s_binary == 1)) & (r_binary == 1)] = 1
-        if is_binary_debug_enabled:
-            Visualization.visualize_pipeline_pyplot(img, sx_binary, r_binary,
-                                                    s_binary, binary_image, sx_8bit,
-                                                    "original", "sx binary", "r binary",
-                                                    "s binary", "resultant", "gray")
 
         return binary_image
