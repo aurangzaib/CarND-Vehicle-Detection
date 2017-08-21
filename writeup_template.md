@@ -13,9 +13,9 @@ The steps of the project are the following:
 
 - Implement a sliding-window technique with HOG sub-sampling and use the trained classifier to search for vehicles in images by predicitng the labels for each feature.
 
-- Create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
+- Create a heat map of recurring detections.
 
-- Estimate a bounding box for vehicles detected.
+- Remove False Positives and Update the bounding boxes for vehicles detected.
 
 [//]: # (Image References)
 [image1]: ./examples/car_not_car.png
@@ -120,7 +120,7 @@ Parameter for SVM classifier found using `GridSearchCV` are as follows:
 ![alt text](./documentation/multi-window-1.png)
 ![alt text](./documentation/multi-window-2.png)
 
-### 4-	Find the Heatmaps:
+### 4-	Find the Heatmaps and remove false positives:
 
 | Source Code Reference    |  |
 |:-----------|:-------------|
@@ -128,10 +128,27 @@ Parameter for SVM classifier found using `GridSearchCV` are as follows:
 | Method  | `Helper.add_heat`      |
 | Method  | `Helper.get_heatmap`      |
 
+- Increment heat value (+1) for all pixels within windows where a positive detection is reported by your classifier.
+-	Apply thresholding on the heatmap.
+-	Using sklearn `measurements` to remove false positive.
+
+| Heatmap parameters    |Value  |
+|:-----------|:-------------|
+| Threshold  | 2      |
+
 ![alt text](./documentation/heat-map-1.png)
 ![alt text](./documentation/heat-map-2.png)
 ![alt text](./documentation/heat-map-3.png)
 ![alt text](./documentation/heat-map-4.png)
+
+### 5-	Update bounding boxes:
+
+| Source Code Reference    |  |
+|:-----------|:-------------|
+| File  | `implementation/helper.py`  |
+| Method  | `Helper.remove_false_positives`      |
+| Method  | `Helper.draw_labeled_bboxes`      |
+
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 

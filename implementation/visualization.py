@@ -19,8 +19,8 @@ class Visualization:
 
     @staticmethod
     def save_detection(img, detected):
-        seconds = int(time.time() % 60)
-        mpimg.imsave("../buffer/detections/{}-single-window-detection.png".format(seconds), detected)
+        t = int(time.time())
+        mpimg.imsave("../buffer/detections/{}-single-window-detection.png".format(t), detected)
 
     @staticmethod
     def save_hog_features(img, hog_image, folder, filename):
