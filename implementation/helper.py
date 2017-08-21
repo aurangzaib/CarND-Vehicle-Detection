@@ -61,6 +61,16 @@ class Helper:
         return heatmap
 
     @staticmethod
+    def get_heatmap(heat):
+        # Apply threshold to help remove false positives
+        heat_binary = Helper.apply_threshold(heat, 1)
+
+        # Visualize the heatmap when displaying
+        heatmap_binary = np.clip(heat_binary, 0, 1)
+
+        return heatmap_binary
+
+    @staticmethod
     def apply_threshold(heatmap, threshold):
         # Zero out pixels below the threshold
         heatmap[heatmap <= threshold] = 0
@@ -97,11 +107,8 @@ class Helper:
         # Add heat to each box in box list
         heat = Helper.add_heat(heat, bounding_boxes)
 
-        # Apply threshold to help remove false positives
-        heat_binary = Helper.apply_threshold(heat, 1)
-
-        # Visualize the heatmap when displaying
-        heatmap_binary = np.clip(heat_binary, 0, 1)
+        # Get binary heat map
+        heatmap_binary = Helper.get_heatmap(heat)
 
         # Find final boxes from heatmap using label function
         labels = label(heatmap_binary)

@@ -102,13 +102,36 @@ Parameter for SVM classifier found using `GridSearchCV` are as follows:
 	-	Get subsample of HOG featuers of each window.
     -	Get Spatial and Color Histogram fratures.
     -	Use HOG, Spatial and Color features to predict the labels using pretrained SVM classifier.
-    -	Get the coordiantes of bounding boxes whenever predicts label as a car.
+    -	Get the coordiantes of bounding boxes whenever the classifier predicts the label as a car.
     
-####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
+| Window Search parameters    |Value  |
+|:-----------|:-------------|
+| Window Size  | 96, 96      |
+| Window Overlap  | 0.5      |
+| Number of Windows  | 64  |
+| Scale  | 1.5  |
+| Number of X Blocks  | 84  |
+| Number of Y Blocks  | 23      |
+| Number of X Steps  | 38      |
+| Number of Y Steps  | 8      |
+| Subsample Size  | 192, 682      |
+	
+  
+![alt text](./documentation/multi-window-1.png)
+![alt text](./documentation/multi-window-2.png)
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+### 4-	Find the Heatmaps:
 
-![alt text][image3]
+| Source Code Reference    |  |
+|:-----------|:-------------|
+| File  | `implementation/helper.py`  |
+| Method  | `Helper.add_heat`      |
+| Method  | `Helper.get_heatmap`      |
+
+![alt text](./documentation/heat-map-1.png)
+![alt text](./documentation/heat-map-2.png)
+![alt text](./documentation/heat-map-3.png)
+![alt text](./documentation/heat-map-4.png)
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
