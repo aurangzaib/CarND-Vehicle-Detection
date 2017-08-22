@@ -2,8 +2,10 @@
 
 | Note    | |
 |:-----------|:-------------|
-| **Source Code**  | For complete implementation of the project:  https://github.com/aurangzaib/CarND-Vehicle-Detection  |
-| **How To Run**  | `cd implementation && python main.py`      |
+| **Source Code**  | https://github.com/aurangzaib/CarND-Vehicle-Detection  |
+| **Car training data**  | https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles.zip      |
+| **Not-car training data**  | https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles.zip      |
+| **How to run**  | `cd implementation && python main.py`      |
 
 The steps of the project are the following:
 

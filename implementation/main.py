@@ -21,7 +21,7 @@ def __main__():
     lanes_fit = []
 
     # classifier and scaler
-    classifier = Classifier.get_trained_classifier(use_pre_trained=True)
+    classifier = Classifier.get_trained_classifier(use_pre_trained=False)
 
     # load calibration parameters:
     camera_matrix, dist_coef = PreProcessing.load_calibration_params()
