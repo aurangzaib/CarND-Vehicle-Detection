@@ -36,6 +36,9 @@ Here are a few samples of vehicle and non-vehicle training datasets:
 
 ![alt text](./documentation/non-vehicles.png)
 
+
+The algorithm is as follows:
+
 -	Reading in all the `vehicle` and `non-vehicle` images.
 -	For `Spatial Bining`, we resize the image to `32x32` and use numpy `ravel` for each color channel to get features vector.
 -	For `Color Histogram`, we use numpy `histogram` for each channel and concatenate the result.
@@ -67,6 +70,8 @@ Here is an example of HOG features of training data samples:
 | Method  | `Classifier.normalize_features`      |
 | Method  | `Classifier.get_trained_classifier`      |
 
+The algorithm is as follows:
+
 -	Randomize dataset using numpy `shuffle`.
 -	Normalize features using sklearn `StandardScaler`.
 Using Support Vector Machine (`SVM`) classifier to fit on the training features and labels.
@@ -89,6 +94,8 @@ Parameter for `SVM` classifier found using `GridSearchCV` are as follows:
 | Method  | `WindowSearch.get_frame_hog`      |
 | Method  | `WindowSearch.get_box`      |
 | Method  | `WindowSearch.get_bounding_boxes`      |
+
+The algorithm is as follows:
 
 -	Get `HOG` features for each full image:
 	-	Get Region of Interest (`ROI`) which is lower half of the image.
@@ -136,6 +143,8 @@ To optimize the pipeline speed, the Region of Interest (ROI) is improved such th
 | File  | `implementation/helper.py`  |
 | Method  | `Helper.add_heat`      |
 | Method  | `Helper.get_heatmap`      |
+
+The algorithm is as follows:
 
 - Increment heat value (+1) for all pixels within windows where a positive detection is predicted by your classifier.
 -	Apply thresholding on the heatmap.
