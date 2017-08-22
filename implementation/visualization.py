@@ -13,14 +13,19 @@ config = Configuration().__dict__
 
 class Visualization:
     @staticmethod
+    def save_region(img):
+        seconds = int(time.time())
+        mpimg.imsave("../buffer/region/{}-region.png".format(seconds), img)
+
+    @staticmethod
     def save_detection_multi_windows(img, detected):
-        seconds = int(time.time() % 60)
+        seconds = int(time.time())
         mpimg.imsave("../buffer/detection-multi-windows/{}-multi-window-detection.png".format(seconds), detected)
 
     @staticmethod
     def save_detection(img, detected):
         t = int(time.time())
-        mpimg.imsave("../buffer/detections/{}-single-window-detection.png".format(t), detected)
+        mpimg.imsave("../buffer/det/{}-detection.png".format(t), detected)
 
     @staticmethod
     def save_hog_features(img, hog_image, folder, filename):

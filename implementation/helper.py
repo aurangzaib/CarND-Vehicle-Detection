@@ -42,12 +42,35 @@ class Helper:
         return feature_image
 
     @staticmethod
-    def draw_boxes(img, boxes, color=(0, 0, 0), thick=3):
+    def draw_boxes(img,
+                   x_start_stop_left, y_start_stop_left,
+                   x_start_stop_right, y_start_stop_right,
+                   x_start_stop_top, y_start_stop_top,
+                   boxes, color=(0, 0, 0), thick=3):
+        from visualization import Visualization
         img_with_boxes = np.copy(img)
+
+        cv.rectangle(img_with_boxes,
+                     (x_start_stop_right[0], y_start_stop_right[0]),
+                     (x_start_stop_right[1], y_start_stop_right[1]),
+                     (0, 1, 0), thick)
+
+        cv.rectangle(img_with_boxes,
+                     (x_start_stop_left[0], y_start_stop_left[0]),
+                     (x_start_stop_left[1], y_start_stop_left[1]),
+                     (0, 1, 0), thick)
+        cv.rectangle(img_with_boxes,
+                     (x_start_stop_top[0], y_start_stop_top[0]),
+                     (x_start_stop_top[1], y_start_stop_top[1]),
+                     (0, 1, 0), thick)
+
         for box in boxes:
             cv.rectangle(img_with_boxes,
                          box[0], box[1],
                          color, thick)
+        cv.imshow("boxes: ", img_with_boxes)
+        cv.waitKey(1)
+        Visualization.save_region(img_with_boxes)
         return img_with_boxes
 
     @staticmethod
@@ -78,7 +101,7 @@ class Helper:
         return heatmap
 
     @staticmethod
-    def draw_labeled_bboxes(img, labels):
+    def draw_updated_boxes(img, labels):
         to_png = 255
         # Iterate through all detected cars
         for car_number in range(1, labels[1] + 1):
@@ -114,7 +137,7 @@ class Helper:
         labels = label(heatmap_binary)
 
         # show box where label is 1
-        detected_cars = Helper.draw_labeled_bboxes(np.copy(img), labels)
+        detected_cars = Helper.draw_updated_boxes(np.copy(img), labels)
 
         # save heatmaps
         if config["save_debug_samples"] is True:
