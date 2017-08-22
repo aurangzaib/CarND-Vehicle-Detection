@@ -1,13 +1,13 @@
 import sys
 
 import imageio
+import matplotlib.pyplot as plt
 
 from classifier import Classifier
 from configuration import Configuration
 from helper import Helper
 from lane_detection import LaneDetection
 from pre_processing import PreProcessing
-from visualization import Visualization
 from window_search import WindowSearch
 
 config = Configuration().__dict__
@@ -16,7 +16,7 @@ sys.path.append("implementation/")
 
 def __main__():
     # get video stream
-    video_cap = imageio.get_reader(config["testing_video_2"])
+    video_cap = imageio.get_reader(config["project_video"])
     # polynomial lane fit
     lanes_fit = []
 
@@ -56,20 +56,9 @@ def __main__():
             # remove false positives and duplicates from detection
             detected_cars = Helper.remove_false_positives(img, bounding_boxes)
 
-            # bounding_boxes = np.hstack((bounding_boxes_left, bounding_boxes_top, bounding_boxes_right))
-            # get detected cars
-            # detected_cars_multi_windows = Helper.draw_boxes(img,
-            #                                                 x_start_stop_left, y_start_stop_left,
-            #                                                 x_start_stop_right, y_start_stop_right,
-            #                                                 x_start_stop_top, y_start_stop_top,
-            #                                                 bounding_boxes,
-            #                                                 color=(0, 0, 0),
-            #                                                 thick=3)
-
-            # Visualization.save_detection_multi_windows(img, detected_cars_multi_windows)
-            Visualization.save_detection(img, detected_cars)
-            # cv.imshow("result", detected_cars)
-            # cv.waitKey(1)
+            # visualization
+            plt.imshow(detected_cars)
+            plt.pause(0.0001)
 
 
 __main__()

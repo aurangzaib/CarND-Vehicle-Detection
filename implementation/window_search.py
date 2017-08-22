@@ -13,6 +13,7 @@ config = Configuration().__dict__
 class WindowSearch:
     @staticmethod
     def get_window_params(img, x_start_stop, y_start_stop):
+
         y_start, y_stop = y_start_stop
         x_start, x_stop = x_start_stop
 
@@ -31,7 +32,6 @@ class WindowSearch:
         n_xblocks = (channel.shape[1] // config["pix_per_cell"]) - config["cell_per_block"] + 1
         n_yblocks = (channel.shape[0] // config["pix_per_cell"]) - config["cell_per_block"] + 1
 
-        # 64 was the original sampling rate, with 8 cells and 8 pix per cell
         window = 64
         n_blocks_per_window = (window // config["pix_per_cell"]) - config["cell_per_block"] + 1
         cells_per_step = 2
@@ -70,7 +70,6 @@ class WindowSearch:
             (x_start + x_box_left + win_draw,
              y_stop_draw + win_draw + y_start)
         ]
-        print("box: ", box)
         return box
 
     @staticmethod

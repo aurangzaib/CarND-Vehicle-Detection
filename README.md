@@ -11,11 +11,13 @@ The steps of the project are the following:
 
 - Randomize and normalize the features and train a `SVM` classifier.
 
-- Implement a sliding-window technique with `HOG` sub-sampling and use the trained classifier to search for vehicles in images by predicitng the labels for each feature.
+- Implement a sliding-window technique with `HOG` sub-sampling and use the trained classifier to search for vehicles in images by predicting the labels for each feature.
 
 - Create a `heat map` of recurring detections.
 
 - Remove `false positives` and Update the bounding boxes for vehicles detected.
+
+---
 
 ### 1-	Feature Extraction
 
@@ -357,11 +359,23 @@ detected_cars = Helper.draw_updated_boxes(np.copy(img), labels)
 
 ### 6-	Combining results with Lane Detection:
 
+
+The results of vehicle detection are combined with lane detection from previous project.
+
 ![alt text](./documentation/pipeline-with-lanes-1.png)
 ![alt text](./documentation/pipeline-with-lanes-2.png)
+![alt text](./documentation/pipeline-with-lanes-3.png)
+![alt text](./documentation/pipeline-with-lanes-4.png)
+![alt text](./documentation/pipeline-with-lanes-5.png)
+![alt text](./documentation/pipeline-with-lanes-6.png)
+
+Here is the video of the complete pipeline:
+
+[![Advanced Vehicle Detection](http://img.youtube.com/vi/ngW_dDmAKjY/0.jpg)](http://www.youtube.com/watch?v=ngW_dDmAKjY)
 
 
-### Discussion
+Discussion
+------------------
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 

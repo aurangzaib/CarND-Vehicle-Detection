@@ -23,9 +23,9 @@ class Visualization:
         mpimg.imsave("../buffer/detection-multi-windows/{}-multi-window-detection.png".format(seconds), detected)
 
     @staticmethod
-    def save_detection(img, detected):
+    def save_detection(img):
         t = int(time.time())
-        mpimg.imsave("../buffer/det/{}-detection.png".format(t), detected)
+        mpimg.imsave("../buffer/detections/{}-detection.png".format(t), img)
 
     @staticmethod
     def save_hog_features(img, hog_image, folder, filename):

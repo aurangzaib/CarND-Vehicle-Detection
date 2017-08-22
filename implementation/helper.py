@@ -42,38 +42,6 @@ class Helper:
         return feature_image
 
     @staticmethod
-    def draw_boxes(img,
-                   x_start_stop_left, y_start_stop_left,
-                   x_start_stop_right, y_start_stop_right,
-                   x_start_stop_top, y_start_stop_top,
-                   boxes, color=(0, 0, 0), thick=3):
-        from visualization import Visualization
-        img_with_boxes = np.copy(img)
-
-        cv.rectangle(img_with_boxes,
-                     (x_start_stop_right[0], y_start_stop_right[0]),
-                     (x_start_stop_right[1], y_start_stop_right[1]),
-                     (0, 1, 0), thick)
-
-        cv.rectangle(img_with_boxes,
-                     (x_start_stop_left[0], y_start_stop_left[0]),
-                     (x_start_stop_left[1], y_start_stop_left[1]),
-                     (0, 1, 0), thick)
-        cv.rectangle(img_with_boxes,
-                     (x_start_stop_top[0], y_start_stop_top[0]),
-                     (x_start_stop_top[1], y_start_stop_top[1]),
-                     (0, 1, 0), thick)
-
-        for box in boxes:
-            cv.rectangle(img_with_boxes,
-                         box[0], box[1],
-                         color, thick)
-        cv.imshow("boxes: ", img_with_boxes)
-        cv.waitKey(1)
-        Visualization.save_region(img_with_boxes)
-        return img_with_boxes
-
-    @staticmethod
     def add_heat(heatmap, bbox_list):
         # Iterate through list of bboxes
         for box in bbox_list:
@@ -145,3 +113,38 @@ class Helper:
             Visualization.save_heat_map(heat)
 
         return detected_cars
+
+    @staticmethod
+    def draw_boxes(img,
+                   x_start_stop_left, y_start_stop_left,
+                   x_start_stop_right, y_start_stop_right,
+                   x_start_stop_top, y_start_stop_top,
+                   boxes, color=(0, 0, 0), thick=3):
+        from visualization import Visualization
+        img_with_boxes = np.copy(img)
+
+        cv.rectangle(img_with_boxes,
+                     (x_start_stop_right[0], y_start_stop_right[0]),
+                     (x_start_stop_right[1], y_start_stop_right[1]),
+                     (0, 1, 0), thick)
+
+        cv.rectangle(img_with_boxes,
+                     (x_start_stop_left[0], y_start_stop_left[0]),
+                     (x_start_stop_left[1], y_start_stop_left[1]),
+                     (0, 1, 0), thick)
+        cv.rectangle(img_with_boxes,
+                     (x_start_stop_top[0], y_start_stop_top[0]),
+                     (x_start_stop_top[1], y_start_stop_top[1]),
+                     (0, 1, 0), thick)
+
+        for box in boxes:
+            cv.rectangle(img_with_boxes,
+                         box[0], box[1],
+                         color, thick)
+
+        cv.imshow("boxes: ", img_with_boxes)
+        cv.waitKey(1)
+
+        Visualization.save_region(img_with_boxes)
+
+        return img_with_boxes
