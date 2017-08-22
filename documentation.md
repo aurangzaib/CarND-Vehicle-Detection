@@ -30,6 +30,12 @@ The steps of the project are the following:
 | Method  | `FeatureExtraction.color_hist`      |
 | Method  | `FeatureExtraction.get_hog_features`      |
 
+Here are a few samples of vehicle and non-vehicle training datasets:
+
+![alt text](./documentation/vehicles.png)
+
+![alt text](./documentation/non-vehicles.png)
+
 -	Reading in all the `vehicle` and `non-vehicle` images.
 -	For `Spatial Bining`, we resize the image to `32x32` and use numpy `ravel` for each color channel to get features vector.
 -	For `Color Histogram`, we use numpy `histogram` for each channel and concatenate the result.
@@ -178,12 +184,22 @@ Here is the video of the complete pipeline:
 
 [![Advanced Vehicle Detection](http://img.youtube.com/vi/ngW_dDmAKjY/0.jpg)](http://www.youtube.com/watch?v=ngW_dDmAKjY)
 
----
+
 
 Discussion
 ------------------
 
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+##### Possible Improvements:
+-	Using Convolutional Neural Networks (CNN) can be much faster compared to Support Vector Machine (SVM).
+-	Dynanmic thresholding for binarization.
+-	Deep learning approach can be used along with current implementation to reduce the dependency on perspective transform and window sliding algorithm.
+- Region of Interest (ROI) can be further improved by generating a trapezoid dynamically instead of hardcoded rectangle coordinates.
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+##### Potential failure points and problems with current pipeline:
+-	Varying light conditions and trees shadow.
+-	Pipeline will most definitely fail in snow conditions.
+-	Pipeline has issues with overlapping cars.
+- The vehicle detection is not fast enough to be realtime, specially sliding window search algorithm even after improvements in Region of Interest (ROI).
+- Classifier may not predict Trucks, motorbikes etc becuase it is trained only on cars' datasets.
+- The pipeline will have issues with roads with high elevations due to fixed Region of Interest (ROI).
 
