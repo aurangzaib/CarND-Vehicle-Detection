@@ -390,14 +390,11 @@ Here is the video of the complete pipeline:
 [![Advanced Vehicle Detection](http://img.youtube.com/vi/ngW_dDmAKjY/0.jpg)](http://www.youtube.com/watch?v=ngW_dDmAKjY)
 
 
-
 Discussion
 ------------------
 
 ##### Possible Improvements:
--	Using Convolutional Neural Networks (CNN) can be much faster compared to Support Vector Machine (SVM).
--	Dynanmic thresholding for binarization.
--	Deep learning approach can be used along with current implementation to reduce the dependency on perspective transform and window sliding algorithm.
+-	Using Convolutional Neural Networks (CNN) can be much faster compared to Support Vector Machine (SVM), also to reduce the dependency on window sliding algorithm.
 - Region of Interest (ROI) can be further improved by generating a trapezoid dynamically instead of hardcoded rectangle coordinates.
 
 ##### Potential failure points and problems with current pipeline:
@@ -405,6 +402,6 @@ Discussion
 -	Pipeline will most definitely fail in snow conditions.
 -	Pipeline has issues with overlapping cars.
 - The vehicle detection is not fast enough to be realtime, specially sliding window search algorithm even after improvements in Region of Interest (ROI).
-- Classifier may not predict Trucks, motorbikes etc becuase it is trained only on cars' datasets.
-- The pipeline will have issues with roads with high elevations due to fixed Region of Interest (ROI).
+- Classifier may not predict Trucks, motorbikes etc. as it is trained only on cars' datasets.
+- The pipeline will have issues with high elevations due to fixed Region of Interest (ROI).
 
