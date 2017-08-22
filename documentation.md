@@ -111,7 +111,7 @@ Parameter for `SVM` classifier found using `GridSearchCV` are as follows:
 ![alt text](./documentation/multi-window-2.png)
 
 
-To optimize the pipeline speed, the Region of Interest (ROI) is improved such that the extras regions are not part of window search.
+To optimize the pipeline speed, the Region of Interest (ROI) is improved such that the extra regions are not part of window search.
 
 | ROI parameters    |Value  |
 |:-----------|:-------------|
@@ -131,7 +131,7 @@ To optimize the pipeline speed, the Region of Interest (ROI) is improved such th
 | Method  | `Helper.add_heat`      |
 | Method  | `Helper.get_heatmap`      |
 
-- Increment heat value (+1) for all pixels within windows where a positive detection is reported by your classifier.
+- Increment heat value (+1) for all pixels within windows where a positive detection is predicted by your classifier.
 -	Apply thresholding on the heatmap.
 
 
@@ -154,7 +154,7 @@ To optimize the pipeline speed, the Region of Interest (ROI) is improved such th
 
 To update the previously found duplicates and false postive bounding boxes:
 -	Using sklearn `measurements` to remove false positive.
--	Iterate through all car labels i.e. 1.
+-	Iterate through all car labels:
 	-	Get `x` and `y` pixel positions.
     -	Define top left and bottom right coordinates of a rectangle.
     -	Draw bounding box using opencv `rectangle`.
