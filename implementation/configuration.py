@@ -31,6 +31,11 @@ class Configuration:
         self.classifier = "../trained_classifier_new.p"
         self.calibration_parameters = "../calibration_parameters.p"
 
+        # ROI
+        self.xy_start_stop_left = (0, 400), (370, 600)
+        self.xy_start_stop_top = (400, 800), (380, 560)
+        self.xy_start_stop_right = (800, 1270), (370, 600)
+
         # training datasets
         self.training_not_cars = "../training_datasets/non-vehicles/*/*.png"
         self.training_cars = "../training_datasets/vehicles/*/*.png"

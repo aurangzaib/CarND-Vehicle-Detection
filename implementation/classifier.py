@@ -54,9 +54,7 @@ class Classifier:
         features, labels = shuffle(features, labels)
 
         # initialize SVM with optimized params using GridSearchCV
-        # best params --> kernel='rbf', C=10
-        # but makes the classifier slow
-        clf = SVC(kernel='rbf', C=10)
+        clf = SVC(kernel='rbf', C=0.001)
 
         # train the classifier
         clf.fit(features, labels)
@@ -100,7 +98,7 @@ class Classifier:
                                                             test_size=0.2,
                                                             random_state=42)
 
-        clf = SVC(kernel='rbf', C=10)
+        clf = SVC(kernel='rbf', C=0.001)
 
         t_start = int(time.time())
         # train the classifier

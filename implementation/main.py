@@ -39,20 +39,21 @@ def __main__():
             img = img[:, :, :3]
             bounding_boxes = []
             # get bounding boxes for left side
-            x_start_stop_left, y_start_stop_left = (0, 400), (370, 600)
+            x_start_stop_left, y_start_stop_left = config["xy_start_stop_left"]
             bounding_boxes += WindowSearch.get_bounding_boxes(img, classifier,
                                                               x_start_stop_left,
                                                               y_start_stop_left)
             # # get bounding boxes for top side
-            x_start_stop_top, y_start_stop_top = (400, 800), (410, 450)
+            x_start_stop_top, y_start_stop_top = config["xy_start_stop_top"]
             bounding_boxes += WindowSearch.get_bounding_boxes(img, classifier,
                                                               x_start_stop_top,
                                                               y_start_stop_top)
             # get bounding boxes for right side
-            x_start_stop_right, y_start_stop_right = (800, 1270), (370, 600)
+            x_start_stop_right, y_start_stop_right = config["xy_start_stop_right"]
             bounding_boxes += WindowSearch.get_bounding_boxes(img, classifier,
                                                               x_start_stop_right,
                                                               y_start_stop_right)
+            
             # remove false positives and duplicates from detection
             detected_cars = Helper.remove_false_positives(img, bounding_boxes)
 

@@ -107,7 +107,7 @@ Parameter for `SVM` classifier found using `GridSearchCV` are as follows:
 | SVM parameters    |Value  |
 |:-----------|:-------------|
 | Kernel  | rbf  |
-| C  | 10      |
+| C  | 0.001      |
 
 	
 ### 3-	Sliding Window Search with HOG subsampling:
@@ -134,6 +134,21 @@ The algorithm is as follows:
     -	Use HOG, Spatial and Color features to predict the labels using pretrained SVM classifier.
     -	Get the coordinates of bounding boxes if the classifier predicts the label as a car.
     
+-	Determining the ROI:
+	-	ROI is carefully chosen after experimentation to achieve a balance between prediction accuracy and time taken window searching.
+    -	The larger the ROI, the more area is search by sliding window algorithm but the time taken will be higher.
+    - Smaller ROI has shorter searching time but at the expense of missing potential regions to detect the vehicle. 
+    
+| ROI parameters    |Value  |
+|:-----------|:-------------|
+| Left Side  | (0, 400), (370, 600)  |
+| Top Side  | (400, 800), (380, 560)  |
+| Right Side  | (800, 1270), (370, 600)  |
+
+![alt text](./documentation/region-1.png)
+![alt text](./documentation/region-2.png)
+![alt text](./documentation/region-3.png)
+
 | Window Search parameters    |Value  |
 |:-----------|:-------------|
 | Number of Windows  | 64  |
@@ -148,18 +163,6 @@ The algorithm is as follows:
 ![alt text](./documentation/multi-window-1.png)
 ![alt text](./documentation/multi-window-2.png)
 
-
-To optimize the pipeline speed, the Region of Interest (ROI) is improved such that the extra regions are not part of window search.
-
-| ROI parameters    |Value  |
-|:-----------|:-------------|
-| Left Side  | (0, 400), (370, 600)  |
-| Top Side  | (400, 800), (410, 450)  |
-| Right Side  | (800, 1270), (370, 600)  |
-
-![alt text](./documentation/region-1.png)
-![alt text](./documentation/region-2.png)
-![alt text](./documentation/region-3.png)
 
 ### 4-	Find the Heatmaps and remove false positives:
 

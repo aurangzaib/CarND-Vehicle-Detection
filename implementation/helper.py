@@ -114,12 +114,13 @@ class Helper:
 
     @staticmethod
     def draw_boxes(img,
-                   x_start_stop_left, y_start_stop_left,
-                   x_start_stop_right, y_start_stop_right,
-                   x_start_stop_top, y_start_stop_top,
                    boxes, color=(0, 0, 0), thick=3):
         from visualization import Visualization
         img_with_boxes = np.copy(img)
+
+        x_start_stop_left, y_start_stop_left = config["xy_start_stop_left"]
+        x_start_stop_top, y_start_stop_top = config["xy_start_stop_top"]
+        x_start_stop_right, y_start_stop_right = config["xy_start_stop_right"]
 
         cv.rectangle(img_with_boxes,
                      (x_start_stop_right[0], y_start_stop_right[0]),
@@ -140,9 +141,9 @@ class Helper:
                          box[0], box[1],
                          color, thick)
 
-        cv.imshow("boxes: ", img_with_boxes)
-        cv.waitKey(1)
-
         Visualization.save_region(img_with_boxes)
 
+        cv.imshow("boxes: ", img_with_boxes)
+        cv.waitKey(1)
+        
         return img_with_boxes

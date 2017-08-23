@@ -163,7 +163,7 @@ Parameter for `SVM` classifier found using `GridSearchCV` are as follows:
 | SVM parameters    |Value  |
 |:-----------|:-------------|
 | Kernel  | rbf  |
-| C  | 10      |
+| C  | 0.001      |
 
 ```python
 not_cars = glob.glob(config["training_not_cars"])
@@ -190,9 +190,7 @@ labels = np.hstack((np.ones(len(cars_files)), np.zeros(len(not_cars_files))))
 features, labels = shuffle(features, labels)
 
 # initialize SVM with optimized params using GridSearchCV
-# best params --> kernel='rbf', C=10
-# but makes the classifier slow
-clf = SVC()
+clf = SVC( kernel='rbf', C=0.001)
 
 # train the classifier
 clf.fit(features, labels)
@@ -325,23 +323,23 @@ To optimize the pipeline speed, the Region of Interest (ROI) is improved such th
 | ROI parameters    |Value  |
 |:-----------|:-------------|
 | Left Side  | (0, 400), (370, 600)  |
-| Top Side  | (400, 800), (410, 450)  |
+| Top Side  | (400, 800), (380, 560)  |
 | Right Side  | (800, 1270), (370, 600)  |
 
 
 ```python
 bounding_boxes = []  # get bounding boxes for left side
-x_start_stop_left, y_start_stop_left = (0, 400), (370, 600)
+x_start_stop_left, y_start_stop_left = config["xy_start_stop_left"]
 bounding_boxes += WindowSearch.get_bounding_boxes(img, classifier,
                                                   x_start_stop_left,
                                                   y_start_stop_left)
 # # get bounding boxes for top side
-x_start_stop_top, y_start_stop_top = (400, 800), (410, 450)
+x_start_stop_top, y_start_stop_top = config["xy_start_stop_top"]
 bounding_boxes += WindowSearch.get_bounding_boxes(img, classifier,
                                                   x_start_stop_top,
                                                   y_start_stop_top)
 # get bounding boxes for right side
-x_start_stop_right, y_start_stop_right = (800, 1270), (370, 600)
+x_start_stop_right, y_start_stop_right = config["xy_start_stop_right"]
 bounding_boxes += WindowSearch.get_bounding_boxes(img, classifier,
                                                   x_start_stop_right,
                                                   y_start_stop_right)
