@@ -92,7 +92,6 @@ class Helper:
     @staticmethod
     def remove_false_positives(img, bounding_boxes):
         from visualization import Visualization
-        import matplotlib.pyplot as plt
         heat = np.zeros_like(img[:, :, 0]).astype(np.float)
 
         # Add heat to each box in box list
@@ -109,7 +108,6 @@ class Helper:
 
         # save heatmaps
         if config["save_debug_samples"] is True:
-            plt.imshow(heat, cmap="gist_heat")
             Visualization.save_heat_map(heat)
 
         return detected_cars

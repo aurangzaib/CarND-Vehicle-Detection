@@ -44,6 +44,31 @@ The algorithm is as follows:
 -	For `Color Histogram`, we use numpy `histogram` for each channel and concatenate the result.
 -	For `HOG` features, skimage `hog` is used with predefined following parameters.
 
+The combination of parameters are found after running a battery of tests on small datasets. Parameters are selected for best balance of time and prediction accuracy.
+
+| Source Code Reference    |  |
+|:-----------|:-------------|
+| File  | `implementation/classifier.py`  |
+| Method  | `Classifier.evaluate_classifier_parameters`      |
+| Car training data  | https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles_smallset.zip      |
+| Not-car training data  | https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles_smallset.zip      |
+
+Following are the results of the optimal parameters search:
+
+| Orient    |Channel  |Colorspace  | Accuracy (%)  |Train time (s) |Predict time (s)  |
+|:-----------|:-------------|:-------------|:-------------|:-------------|:-------------|
+| 08  | R  |RGB  |98.06  |10  |2  |
+| 10  | R  |RGB  |98.7  |11  |3  |
+| 10  | ALL  |RGB  |99.1  |22  |6  |
+| 10  | Y  |YCrCb  |98.49  |10  |4  |
+| 10  | ALL  |YCrCb  |100  |16  |4  |
+| 10  | ALL  |LUV  |99.56  |16  |4  |
+| 10  | ALL  |HLS  |99.78  |17  |4  |
+| 10  | ALL  |HSV  |99.84  |16  |4  |
+| 12  | ALL  |RGB  |99.5  |25  |7  |
+
+Following parameters combination is selected:
+
 | HOG parameters    |Value  |
 |:-----------|:-------------|
 | Orientation  | 10  |

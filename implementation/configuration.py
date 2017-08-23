@@ -18,9 +18,9 @@ class Configuration:
         # spatial and color params
         self.spatial_size = (32, 32)
         self.hist_bins = 32
-        self.hog_channel = 'ALL'  # Can be 0, 1, 2, or "ALL"
+        self.hog_channel = 'ALL'  # 'ALL'  # 0, 1, 2, or "ALL"
         self.hist_range = (0, 256)
-        self.cspace = 'YCrCb'  # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+        self.cspace = 'YCrCb'  # RGB, HSV, LUV, HLS, YUV, YCrCb
 
         # sliding window search params
         self.scale = 1.7
@@ -34,6 +34,8 @@ class Configuration:
         # training datasets
         self.training_not_cars = "../training_datasets/non-vehicles/*/*.png"
         self.training_cars = "../training_datasets/vehicles/*/*.png"
+        self.training_not_cars_small = "../training_datasets_small/non-vehicles_smallset/*/*.jpeg"
+        self.training_cars_small = "../training_datasets_small/vehicles_smallset/*/*.jpeg"
 
         # testing datasets
         self.testing_video = "../test_video.mp4"
