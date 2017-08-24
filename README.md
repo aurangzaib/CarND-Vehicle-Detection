@@ -275,6 +275,7 @@ The algorithm is as follows:
 | File  | `implementation/helper.py`  |
 | Method  | `Helper.add_heat`      |
 | Method  | `Helper.get_heatmap`      |
+| Method  | `Helper.remove_false_positives`      |
 
 The algorithm is as follows:
 
