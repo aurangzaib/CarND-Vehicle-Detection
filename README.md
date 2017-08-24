@@ -299,7 +299,7 @@ heatmap_binary = np.clip(heat_binary, 0, 1)
     	from collection import deque
     	history = deque(maxlen=8)
         ```
-	-	Maintain history of heartmaps:
+	-	Maintain history of heatmaps:
     	```python
     	history.append(heatmap)
         ```
@@ -334,14 +334,19 @@ To update the previously found duplicates and false postive bounding boxes:
     -	Draw bounding box using opencv `rectangle`.
     
 ```python
-heat = np.zeros_like(img[:, :, 0]).astype(np.float)  # Add heat to each box in box list
+# get the average of heatmaps from history
+new_heat = np.zeros_like(img[:, :, 0]).astype(np.float)
+heat = np.mean(history, axis=0) if len(history) > 0 else new_heat
 heat = Helper.add_heat(heat, bounding_boxes)
 
 # Get binary heat map
-heatmap_binary = Helper.get_heatmap(heat)
+heatmap = Helper.get_heatmap(heat)
 
 # Find final boxes from heatmap using label function
-labels = label(heatmap_binary)
+labels = label(heatmap)
+
+# update heatmap history
+history.append(heatmap)
 
 # show box where label is 1
 detected_cars = Helper.draw_updated_boxes(np.copy(img), labels)
@@ -366,7 +371,7 @@ The results of vehicle detection are combined with lane detection from previous 
 
 Here is the video of the complete pipeline:
 
-[![Advanced Vehicle Detection](http://img.youtube.com/vi/ngW_dDmAKjY/0.jpg)](http://www.youtube.com/watch?v=ngW_dDmAKjY)
+[![Advanced Vehicle Detection](http://img.youtube.com/vi/Ff96rLUurrc/0.jpg)](http://www.youtube.com/watch?v=Ff96rLUurrc)
 
 
 Discussion
