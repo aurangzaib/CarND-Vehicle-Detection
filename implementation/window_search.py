@@ -28,19 +28,16 @@ class WindowSearch:
 
         channel = ctrans_tosearch[:, :, 0]
 
-        # Define blocks and steps as above
+        # Define number of blocks
         n_xblocks = (channel.shape[1] // config["pix_per_cell"]) - config["cell_per_block"] + 1
         n_yblocks = (channel.shape[0] // config["pix_per_cell"]) - config["cell_per_block"] + 1
-
-        window = 64
-        n_blocks_per_window = (window // config["pix_per_cell"]) - config["cell_per_block"] + 1
-        cells_per_step = 2
+        n_blocks_per_window = (config["window_size"] // config["pix_per_cell"]) - config["cell_per_block"] + 1
 
         # Instead of overlap, define how many cells to step
-        n_xsteps = (n_xblocks - n_blocks_per_window) // cells_per_step
-        n_ysteps = (n_yblocks - n_blocks_per_window) // cells_per_step
+        n_xsteps = (n_xblocks - n_blocks_per_window) // config["cells_per_step"]
+        n_ysteps = (n_yblocks - n_blocks_per_window) // config["cells_per_step"]
 
-        return n_xsteps, n_ysteps, cells_per_step, (window, n_blocks_per_window, ctrans_tosearch)
+        return n_xsteps, n_ysteps, (n_blocks_per_window, ctrans_tosearch)
 
     @staticmethod
     def get_frame_hog(ctrans_tosearch):
@@ -58,10 +55,10 @@ class WindowSearch:
         return hog1, hog2, hog3
 
     @staticmethod
-    def get_box(x_start, x_left, y_start, y_stop, window):
+    def get_box(x_start, x_left, y_start, y_stop):
         x_box_left = np.int(x_left * config["scale"])
         y_stop_draw = np.int(y_stop * config["scale"])
-        win_draw = np.int(window * config["scale"])
+        win_draw = np.int(config["window_size"] * config["scale"])
 
         box = [
             (x_start + x_box_left,
@@ -78,10 +75,10 @@ class WindowSearch:
     def get_bounding_boxes(img, classifier, x_start_stop, y_start_stop):
 
         # get window parameters
-        n_xsteps, n_ysteps, cells_per_step, w = WindowSearch.get_window_params(img,
-                                                                               x_start_stop,
-                                                                               y_start_stop)
-        window, n_blocks_per_window, ctrans_tosearch = w
+        n_xsteps, n_ysteps, w = WindowSearch.get_window_params(img,
+                                                               x_start_stop,
+                                                               y_start_stop)
+        n_blocks_per_window, ctrans_tosearch = w
 
         # get hog features for full image
         hog1, hog2, hog3 = WindowSearch.get_frame_hog(ctrans_tosearch)
@@ -95,8 +92,8 @@ class WindowSearch:
 
         for xb in range(n_xsteps):
             for yb in range(n_ysteps):
-                y_pos = yb * cells_per_step
-                x_pos = xb * cells_per_step
+                y_pos = yb * config["cells_per_step"]
+                x_pos = xb * config["cells_per_step"]
 
                 # Extract HOG for this patch
                 hog_feat1 = hog1[y_pos:y_pos + n_blocks_per_window, x_pos:x_pos + n_blocks_per_window].ravel()
@@ -107,7 +104,10 @@ class WindowSearch:
                 y_stop = y_pos * config["pix_per_cell"]
 
                 # Extract the image patch
-                sub_sample_img = cv.resize(ctrans_tosearch[y_stop:y_stop + window, x_left:x_left + window], (64, 64))
+                sub_sample_img = cv.resize(
+                    ctrans_tosearch[y_stop:y_stop + config["window_size"], x_left:x_left + config["window_size"]],
+                    (config["window_size"], config["window_size"])
+                )
 
                 # Get color and gradient features for each image patch
                 hog_features = np.hstack((hog_feat1, hog_feat2, hog_feat3))
@@ -115,10 +115,10 @@ class WindowSearch:
                 hist_features = FeatureExtraction.color_hist(sub_sample_img, nbins=config["hist_bins"])
 
                 # append merge features
-                feature = np.hstack((spatial_features, hist_features, hog_features))
+                features = np.hstack((spatial_features, hist_features, hog_features))
 
                 # normalize the features
-                features = scaler.transform(np.array(feature).reshape(1, -1))
+                features = scaler.transform(np.array(features).reshape(1, -1))
 
                 # predict the label for the features: 1 = car, 0 = not car
                 predicted_labels = svc.predict(features)
@@ -128,8 +128,7 @@ class WindowSearch:
                     bounding_boxes.append(WindowSearch.get_box(x_start,
                                                                x_left,
                                                                y_start,
-                                                               y_stop,
-                                                               window))
+                                                               y_stop))
 
         t_end = int(time.time())
         print("prediction time: {}".format(t_end - t_start))

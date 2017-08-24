@@ -1,4 +1,5 @@
 import sys
+from collections import deque
 
 import imageio
 import matplotlib.pyplot as plt
@@ -20,13 +21,16 @@ def __main__():
     # polynomial lane fit
     lanes_fit = []
 
+    # history of heatmaps to reject false positives
+    history = deque(maxlen=config["history_limit"])
+
     # classifier and scaler
-    classifier = Classifier.get_trained_classifier(use_pre_trained=False)
+    classifier = Classifier.get_trained_classifier(use_pre_trained=True)
 
     # load calibration parameters:
     camera_matrix, dist_coef = PreProcessing.load_calibration_params()
     for index, img in enumerate(video_cap):
-        if index % 2 == 0:
+        if index % config["skip_frames"] == 0:
             # get lanes
             lanes_fit, img = LaneDetection.pipeline(img, lanes_fit, camera_matrix, dist_coef)
             # resize image to improve speed of vehicle detection using classifier
@@ -36,7 +40,8 @@ def __main__():
                 img = Helper.scale_to_png(img)
 
             # 3 channel without alpha
-            img = img[:, :, :3]
+            img = img[:, :, :config["channels"]]
+
             bounding_boxes = []
             # get bounding boxes for left side
             x_start_stop_left, y_start_stop_left = config["xy_start_stop_left"]
@@ -53,10 +58,9 @@ def __main__():
             bounding_boxes += WindowSearch.get_bounding_boxes(img, classifier,
                                                               x_start_stop_right,
                                                               y_start_stop_right)
-            
-            # remove false positives and duplicates from detection
-            detected_cars = Helper.remove_false_positives(img, bounding_boxes)
 
+            # remove false positives and duplicates from detection
+            detected_cars = Helper.remove_false_positives(img, bounding_boxes, history)
             # visualization
             plt.imshow(detected_cars)
             plt.pause(0.0001)

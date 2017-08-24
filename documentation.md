@@ -123,12 +123,12 @@ Parameter for `SVM` classifier found using `GridSearchCV` are as follows:
 The algorithm is as follows:
 
 -	Get `HOG` features for each full image:
-	-	Get Region of Interest (`ROI`) which is lower half of the image.
+	-	Get Region of Interest (`ROI`). Description for selecting `ROI` is provided below.
     -	Find number of search steps using window size and number of windows.
     -	Get `HOG` features of `Y`, `Cr` and `Cb` channels individually.
     
 -	Loop over the windows in `x` and `y` direction:
-    -	Get subsample of image for each window.
+    -	Get HOG features for the full image only once.
 	-	Get subsample of `HOG` features for each window.
     -	Get Spatial and Color Histogram features of the subsample.
     -	Use HOG, Spatial and Color features to predict the labels using pretrained SVM classifier.
@@ -149,16 +149,32 @@ The algorithm is as follows:
 ![alt text](./documentation/region-2.png)
 ![alt text](./documentation/region-3.png)
 
+
+-	Determining window parameters:
+	-	Window size is set to be **64** as image size in training dataset is **64x64**.
+	-	Number of blocks in a window are defined.
+    	```
+    	Blocks per window = (Window size) / (Pixels per cell - Cells per block + 1)
+    	```
+	-	Instead of using overlap, cells per step is defined using `number of blocks` and `blocks in a window`.
+        ```
+        Number of steps = (Blocks - Blocks per window) / (Cells per step)
+        ```
+        
+       
+    
 | Window Search parameters    |Value  |
 |:-----------|:-------------|
-| Number of Windows  | 64  |
+| Window size  | 64  |
 | Scale  | 1.7  |
-| Number of X Blocks  | 84  |
-| Number of Y Blocks  | 23      |
-| Number of X Steps  | 38      |
-| Number of Y Steps  | 8      |
-| Subsample Size  | 192, 682      |
-	
+| Subsample Image Size  | (64, 64)      |
+| Number of Blocks   |Right: (28,15)      |
+|    | Top: (28,12)      |
+|    | Left: (33,15)      |
+| Number of Steps   | Right: (10,4)      |
+| | Top: (10,2)      |
+| | Left: (13,4)      |
+| Blocks per window  | 7      |
 
 ![alt text](./documentation/multi-window-1.png)
 ![alt text](./documentation/multi-window-2.png)
@@ -176,16 +192,33 @@ The algorithm is as follows:
 
 - Increment heat value (+1) for all pixels within windows where a positive detection is predicted by your classifier.
 -	Apply thresholding on the heatmap.
-
-
+-	Find bounding boxes from thresholded heatmap using `scipy.ndimage.measurements.label`
+-	Multi-frame accumulated heatmap is used to minimize false detections for subsequent video frames:
+	-	Create history vector with max length restricted using `deque`:
+    	```python
+        from collections import deque
+    	history = deque(maxlen=8)
+        ```
+	-	Maintain history of heatmaps:
+    	```python
+    	history.append(heatmap)
+        ```
+ 	-	Use average heatmap for thresholding and for finding labels instead of only current heatmap:
+    	```python
+   	   new_heat = np.zeros_like(img[:, :, 0]).astype(np.float)
+    	heat = np.mean(history, axis=0) if len(history) > 0 else new_heat
+    	```
+    
 | Heatmap parameters    |Value  |
 |:-----------|:-------------|
 | Threshold  | 2      |
-
+    
 ![alt text](./documentation/heat-map-1.png)
 ![alt text](./documentation/heat-map-2.png)
 ![alt text](./documentation/heat-map-3.png)
 ![alt text](./documentation/heat-map-4.png)
+
+
 
 ### 5-	Update bounding boxes:
 
@@ -219,7 +252,7 @@ The results of vehicle detection are combined with lane detection from previous 
 
 Here is the video of the complete pipeline:
 
-[![Advanced Vehicle Detection](http://img.youtube.com/vi/ngW_dDmAKjY/0.jpg)](http://www.youtube.com/watch?v=ngW_dDmAKjY)
+[![Advanced Vehicle Detection](http://img.youtube.com/vi/Ff96rLUurrc/0.jpg)](http://www.youtube.com/watch?v=Ff96rLUurrc)
 
 
 

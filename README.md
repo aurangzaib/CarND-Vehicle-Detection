@@ -213,141 +213,60 @@ return clf, scaler
 The algorithm is as follows:
 
 -	Get `HOG` features for each full image:
-	-	Get Region of Interest (`ROI`) which is lower half of the image.
+	-	Get Region of Interest (`ROI`). Description for selecting `ROI` is provided below.
     -	Find number of search steps using window size and number of windows.
     -	Get `HOG` features of `Y`, `Cr` and `Cb` channels individually.
     
-```python
-y_start, y_stop = y_start_top
-
-img_tosearch = img[y_start:y_stop, :, :]
-ctrans_tosearch = Helper.convert_color(img_tosearch, conv='RGB2YCrCb')
-if config["scale"] != 1:
-    imshape = ctrans_tosearch.shape
-    ctrans_tosearch = cv.resize(ctrans_tosearch,
-                                (np.int(imshape[1] / config["scale"]),
-                                 np.int(imshape[0] / config["scale"])))
-
-ch1 = ctrans_tosearch[:, :, 0]
-ch2 = ctrans_tosearch[:, :, 1]
-ch3 = ctrans_tosearch[:, :, 2]
-
-# Define blocks and steps as above
-n_xblocks = (ch1.shape[1] // config["pix_per_cell"]) - config["cell_per_block"] + 1
-n_yblocks = (ch1.shape[0] // config["pix_per_cell"]) - config["cell_per_block"] + 1
-
-# 64 was the original sampling rate, with 8 cells and 8 pix per cell
-window = 64
-n_blocks_per_window = (window // config["pix_per_cell"]) - config["cell_per_block"] + 1
-cells_per_step = 2
-# Instead of overlap, define how many cells to step
-n_xsteps = (n_xblocks - n_blocks_per_window) // cells_per_step
-n_ysteps = (n_yblocks - n_blocks_per_window) // cells_per_step
-
-# Compute individual channel HOG features for the entire image
-# Y channel
-hog1 = FeatureExtraction.get_hog_features(ch1, folder="../buffer/hog-features/")
-# Cr  channel
-hog2 = FeatureExtraction.get_hog_features(ch2)
-# Cb channel
-hog3 = FeatureExtraction.get_hog_features(ch3)
-```
 -	Loop over the windows in `x` and `y` direction:
-    -	Get subsample of image for each window.
+    -	Get HOG features for the full image only once.
 	-	Get subsample of `HOG` features for each window.
     -	Get Spatial and Color Histogram features of the subsample.
     -	Use HOG, Spatial and Color features to predict the labels using pretrained SVM classifier.
     -	Get the coordinates of bounding boxes if the classifier predicts the label as a car.
     
-| Window Search parameters    |Value  |
-|:-----------|:-------------|
-| Number of Windows  | 64  |
-| Scale  | 1.5  |
-| Number of X Blocks  | 84  |
-| Number of Y Blocks  | 23      |
-| Number of X Steps  | 38      |
-| Number of Y Steps  | 8      |
-| Subsample Size  | 192, 682      |
-```python
-for xb in range(n_xsteps):
-    for yb in range(n_ysteps):
-        y_pos = yb * cells_per_step
-        x_pos = xb * cells_per_step
-
-        # Extract HOG for this patch
-        hog_feat1 = hog1[y_pos:y_pos + n_blocks_per_window, x_pos:x_pos + n_blocks_per_window].ravel()
-        hog_feat2 = hog2[y_pos:y_pos + n_blocks_per_window, x_pos:x_pos + n_blocks_per_window].ravel()
-        hog_feat3 = hog3[y_pos:y_pos + n_blocks_per_window, x_pos:x_pos + n_blocks_per_window].ravel()
-
-        x_left = x_pos * config["pix_per_cell"]
-        y_top = y_pos * config["pix_per_cell"]
-
-        # Extract the image patch
-        sub_sample_img = cv.resize(ctrans_tosearch[y_top:y_top + window, x_left:x_left + window], (64, 64))
-
-        # Get color and gradient features for each image patch
-        hog_features = np.hstack((hog_feat1, hog_feat2, hog_feat3))
-        spatial_features = FeatureExtraction.bin_spatial(sub_sample_img, size=config["spatial_size"])
-        hist_features = FeatureExtraction.color_hist(sub_sample_img, nbins=config["hist_bins"])
-
-        # append merge features
-        feature = np.hstack((spatial_features, hist_features, hog_features))
-
-        # normalize the features
-        features = scaler.transform(np.array(feature).reshape(1, -1))
-
-        # predict the label for the features: 1 = car, 0 = not car
-        predicted_labels = svc.predict(features)
-
-        # get the bounding box for detected cars
-        if predicted_labels == 1:
-            bounding_boxes.append(WindowSearch.get_box(x_left, y_start, y_top, window))
-``` 
-
-| Window Search parameters    |Value  |
-|:-----------|:-------------|
-| Number of Windows  | 64  |
-| Scale  | 1.5  |
-| Number of X Blocks  | 84  |
-| Number of Y Blocks  | 23      |
-| Number of X Steps  | 38      |
-| Number of Y Steps  | 8      |
-| Subsample Size  | 192, 682      |
-	
-  
-![alt text](./documentation/multi-window-1.png)
-![alt text](./documentation/multi-window-2.png)
-
-To optimize the pipeline speed, the Region of Interest (ROI) is improved such that the extra regions are not part of window search.
-
+-	Determining the ROI:
+	-	ROI is carefully chosen after experimentation to achieve a balance between prediction accuracy and time taken window searching.
+    -	The larger the ROI, the more area is search by sliding window algorithm but the time taken will be higher.
+    - Smaller ROI has shorter searching time but at the expense of missing potential regions to detect the vehicle. 
+    
 | ROI parameters    |Value  |
 |:-----------|:-------------|
 | Left Side  | (0, 400), (370, 600)  |
 | Top Side  | (400, 800), (380, 560)  |
 | Right Side  | (800, 1270), (370, 600)  |
 
-
-```python
-bounding_boxes = []  # get bounding boxes for left side
-x_start_stop_left, y_start_stop_left = config["xy_start_stop_left"]
-bounding_boxes += WindowSearch.get_bounding_boxes(img, classifier,
-                                                  x_start_stop_left,
-                                                  y_start_stop_left)
-# # get bounding boxes for top side
-x_start_stop_top, y_start_stop_top = config["xy_start_stop_top"]
-bounding_boxes += WindowSearch.get_bounding_boxes(img, classifier,
-                                                  x_start_stop_top,
-                                                  y_start_stop_top)
-# get bounding boxes for right side
-x_start_stop_right, y_start_stop_right = config["xy_start_stop_right"]
-bounding_boxes += WindowSearch.get_bounding_boxes(img, classifier,
-                                                  x_start_stop_right,
-                                                  y_start_stop_right)
-```
-
 ![alt text](./documentation/region-1.png)
 ![alt text](./documentation/region-2.png)
 ![alt text](./documentation/region-3.png)
+
+
+-	Determining window parameters:
+	-	Window size is set to be **64** as image size in training dataset is **64x64**.
+	-	Number of blocks in a window are defined.
+        ```
+        Blocks per window = (Window size) / (Pixels per cell - Cells per block + 1)
+        ```
+	-	Instead of using overlap, cells per step is defined using `number of blocks` and `blocks in a window`.
+        ```
+        Number of steps = (Blocks - Blocks per window) / (Cells per step)
+        ```
+        
+    
+| Window Search parameters    |Value  |
+|:-----------|:-------------|
+| Window size  | 64  |
+| Scale  | 1.7  |
+| Subsample Image Size  | (64, 64)      |
+| Number of Blocks   |Right: (28,15)      |
+|    | Top: (28,12)      |
+|    | Left: (33,15)      |
+| Number of Steps   | Right: (10,4)      |
+| | Top: (10,2)      |
+| | Left: (13,4)      |
+| Blocks per window  | 7      |
+
+![alt text](./documentation/multi-window-1.png)
+![alt text](./documentation/multi-window-2.png)
 
 ### 4-	Find the Heatmaps and remove false positives:
 
@@ -360,8 +279,6 @@ bounding_boxes += WindowSearch.get_bounding_boxes(img, classifier,
 The algorithm is as follows:
 
 - Increment heat value (+1) for all pixels within windows where a positive detection is predicted by your classifier.
--	Apply thresholding on the heatmap.
-
 ```python
 for box in bbox_list:
     # Add += 1 for all pixels inside each bbox
@@ -370,16 +287,32 @@ for box in bbox_list:
     # Return updated heatmap
 return heatmap
 ```
-
-| Heatmap parameters    |Value  |
-|:-----------|:-------------|
-| Threshold  | 2      |
-
+-	Apply thresholding on the heatmap.
 ```python
 # Apply threshold to help remove false positives
 heat_binary = heatmap[heatmap <= threshold] = 0
 heatmap_binary = np.clip(heat_binary, 0, 1)
 ```
+-	Multi-frame accumulated heatmap can be used to optimize the pipeline for subsequent video frames:
+	-	Create history vector with max length restricted using `deque`:
+    	```python
+    	from collection import deque
+    	history = deque(maxlen=8)
+        ```
+	-	Maintain history of heartmaps:
+    	```python
+    	history.append(heatmap)
+        ```
+ 	-	Use average heatmap for thresholding and for finding labels instead of only current heatmap:
+       	```python
+   	    new_heat = np.zeros_like(img[:, :, 0]).astype(np.float)
+        heat = np.mean(history, axis=0) if len(history) > 0 else new_heat
+        ```
+
+| Heatmap parameters    |Value  |
+|:-----------|:-------------|
+| Threshold  | 2      |
+
 ![alt text](./documentation/heat-map-1.png)
 ![alt text](./documentation/heat-map-2.png)
 ![alt text](./documentation/heat-map-3.png)

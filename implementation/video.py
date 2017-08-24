@@ -6,9 +6,9 @@ import cv2 as cv
 class Video:
     @staticmethod
     def img2video(folder):
-        img = cv.imread("../buffer/detections/1503358539-detection.png")
+        img = cv.imread("../buffer/detections/1503570634-detection.png")
         dimensions = img.shape[1], img.shape[0]
-        out = cv.VideoWriter('pipeline.avi',
+        out = cv.VideoWriter('pipeline-new.avi',
                              cv.VideoWriter_fourcc('M', 'J', 'P', 'G'),
                              10,
                              dimensions)

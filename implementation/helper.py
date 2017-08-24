@@ -42,33 +42,6 @@ class Helper:
         return feature_image
 
     @staticmethod
-    def add_heat(heatmap, bbox_list):
-        # Iterate through list of bboxes
-        for box in bbox_list:
-            # Add += 1 for all pixels inside each bbox
-            # Assuming each "box" takes the form ((x1, y1), (x2, y2))
-            heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
-        # Return updated heatmap
-        return heatmap
-
-    @staticmethod
-    def get_heatmap(heat):
-        # Apply threshold to help remove false positives
-        heat_binary = Helper.apply_threshold(heat, 1)
-
-        # Visualize the heatmap when displaying
-        heatmap_binary = np.clip(heat_binary, 0, 1)
-
-        return heatmap_binary
-
-    @staticmethod
-    def apply_threshold(heatmap, threshold):
-        # Zero out pixels below the threshold
-        heatmap[heatmap <= threshold] = 0
-        # Return thresholded map
-        return heatmap
-
-    @staticmethod
     def draw_updated_boxes(img, labels):
         to_png = 255
         # Iterate through all detected cars
@@ -90,18 +63,50 @@ class Helper:
         return img
 
     @staticmethod
-    def remove_false_positives(img, bounding_boxes):
+    def add_heat(heatmap, bbox_list):
+        # Iterate through list of bboxes
+        for box in bbox_list:
+            # Add += 1 for all pixels inside each bbox
+            # Assuming each "box" takes the form ((x1, y1), (x2, y2))
+            heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
+        # Return updated heatmap
+        return heatmap
+
+    @staticmethod
+    def get_heatmap(heat):
+        # Apply threshold to help remove false positives
+        heat_binary = Helper.apply_threshold(heat)
+
+        # Visualize the heatmap when displaying
+        heatmap_binary = np.clip(heat_binary, 0, 1)
+
+        return heatmap_binary
+
+    @staticmethod
+    def apply_threshold(heatmap):
+        # Zero out pixels below the threshold
+        heatmap[heatmap <= config["threshold"]] = 0
+        # Return thresholded map
+        return heatmap
+
+    @staticmethod
+    def remove_false_positives(img, bounding_boxes, history):
         from visualization import Visualization
-        heat = np.zeros_like(img[:, :, 0]).astype(np.float)
+
+        # get the average of heatmaps from history
+        heat = np.mean(history, axis=0) if len(history) > 0 else np.zeros_like(img[:, :, 0]).astype(np.float)
 
         # Add heat to each box in box list
         heat = Helper.add_heat(heat, bounding_boxes)
 
         # Get binary heat map
-        heatmap_binary = Helper.get_heatmap(heat)
+        heatmap = Helper.get_heatmap(heat)
 
         # Find final boxes from heatmap using label function
-        labels = label(heatmap_binary)
+        labels = label(heatmap)
+
+        # update heatmap history
+        history.append(heatmap)
 
         # show box where label is 1
         detected_cars = Helper.draw_updated_boxes(np.copy(img), labels)
@@ -145,5 +150,5 @@ class Helper:
 
         cv.imshow("boxes: ", img_with_boxes)
         cv.waitKey(1)
-        
+
         return img_with_boxes
